@@ -1,0 +1,340 @@
+.car-detail-page { padding-bottom: 64px; }
+
+/* Breadcrumb */
+.breadcrumb {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-light);
+  padding: 14px 0;
+  font-size: 14px;
+}
+
+.breadcrumb .container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb button {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.breadcrumb button:hover { text-decoration: underline; }
+
+.breadcrumb span:not(.container span:last-child) { color: var(--gray); }
+
+.breadcrumb span:last-child { color: var(--charcoal); font-weight: 500; }
+
+/* Layout */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+/* ── Left ── */
+.detail-left { display: flex; flex-direction: column; gap: 24px; }
+
+.detail-image {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 16/10;
+  background: var(--gray-light);
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-badge-lg {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 100px;
+}
+
+/* Tabs */
+.detail-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-dark);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--white);
+  color: var(--blue);
+  box-shadow: var(--shadow);
+}
+
+/* Specs */
+.specs-grid {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.spec-row:last-child { border-bottom: none; }
+
+.spec-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-dark);
+}
+
+.spec-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+/* Features */
+.features-list {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.features-list li {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--charcoal);
+}
+
+/* ── Right ── */
+.detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 88px;
+  height: fit-content;
+}
+
+.detail-summary {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-summary h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--black);
+  line-height: 1.2;
+}
+
+.detail-price {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.detail-quick-specs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-quick-specs span {
+  font-size: 13px;
+  color: var(--gray-dark);
+  background: var(--bg);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+/* Finance teaser */
+.finance-teaser {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--blue-light);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.finance-teaser span { font-size: 24px; flex-shrink: 0; }
+
+.finance-teaser strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.finance-teaser p {
+  font-size: 13px;
+  color: var(--gray-dark);
+}
+
+/* Booking card */
+.booking-card {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.booking-card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 20px;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.form-field input,
+.form-field select {
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-light);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--black);
+  background: var(--white);
+  transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.booking-login-note {
+  font-size: 13px;
+  color: var(--gray-dark);
+  text-align: center;
+}
+
+.booking-login-note button {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.booking-submit {
+  padding: 13px;
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.booking-submit:hover { background: var(--blue-dark); }
+
+.booking-success {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.booking-success span { font-size: 20px; }
+.booking-success strong { display: block; font-size: 15px; color: #166534; margin-bottom: 4px; }
+.booking-success p { font-size: 13px; color: #166534; }
+
+/* Enquire */
+.enquire-box {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.enquire-box p { font-size: 14px; color: var(--gray-dark); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .detail-layout { grid-template-columns: 1fr; }
+  .detail-right { position: static; }
+  .features-list { grid-template-columns: 1fr; }
+}
