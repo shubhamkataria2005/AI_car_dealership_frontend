@@ -1,4 +1,6 @@
-.inventory-page { padding-bottom: 64px; }
+.inventory-page {
+  padding-bottom: 64px;
+}
 
 .inventory-header {
   background: var(--white);
@@ -11,6 +13,7 @@
   font-size: 36px;
   font-weight: 700;
   color: var(--black);
+  margin: 0 0 8px 0;
 }
 
 .inventory-header p {
@@ -22,12 +25,12 @@
 /* Layout */
 .inventory-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 32px;
   margin-top: 32px;
 }
 
-/* ── Sidebar ── */
+/* ── Sidebar Filters ── */
 .filters-sidebar {
   background: var(--white);
   border: 1px solid var(--gray-light);
@@ -44,6 +47,7 @@
   font-weight: 700;
   color: var(--black);
   margin-bottom: 20px;
+  margin-top: 0;
 }
 
 .filter-group {
@@ -60,7 +64,8 @@
   letter-spacing: 0.5px;
 }
 
-.filter-group input[type="text"] {
+.filter-group input[type="text"],
+.filter-group input[type="search"] {
   width: 100%;
   padding: 9px 12px;
   border: 1.5px solid var(--gray-light);
@@ -69,9 +74,11 @@
   font-size: 14px;
   color: var(--black);
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
-.filter-group input[type="text"]:focus {
+.filter-group input[type="text"]:focus,
+.filter-group input[type="search"]:focus {
   outline: none;
   border-color: var(--blue);
 }
@@ -79,11 +86,11 @@
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .filter-chip {
-  padding: 5px 12px;
+  padding: 6px 14px;
   background: var(--bg);
   border: 1.5px solid var(--gray-light);
   border-radius: 100px;
@@ -92,8 +99,7 @@
   font-weight: 500;
   color: var(--gray-dark);
   transition: all 0.15s;
-  margin-bottom: 4px;
-  margin-right: 4px;
+  cursor: pointer;
 }
 
 .filter-chip:hover {
@@ -112,6 +118,7 @@
   width: 100%;
   accent-color: var(--blue);
   margin-top: 4px;
+  cursor: pointer;
 }
 
 .price-range-labels {
@@ -134,6 +141,7 @@
   color: var(--gray-dark);
   transition: all 0.2s;
   margin-top: 8px;
+  cursor: pointer;
 }
 
 .reset-filters:hover {
@@ -142,7 +150,11 @@
 }
 
 /* ── Main content ── */
-.inventory-main { display: flex; flex-direction: column; gap: 20px; }
+.inventory-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
 .inventory-toolbar {
   display: flex;
@@ -152,6 +164,8 @@
   background: var(--white);
   border: 1px solid var(--gray-light);
   border-radius: var(--radius);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .results-count {
@@ -171,7 +185,10 @@
   cursor: pointer;
 }
 
-.sort-select:focus { outline: none; border-color: var(--blue); }
+.sort-select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
 
 /* Inventory grid */
 .inventory-grid {
@@ -180,8 +197,7 @@
   gap: 20px;
 }
 
-/* Car card — shared styles are in HomePage.css via global cascade,
-   but we re-declare here for isolation */
+/* Car card styles */
 .car-card {
   background: var(--white);
   border: 1px solid var(--gray-light);
@@ -209,7 +225,9 @@
   transition: transform 0.3s;
 }
 
-.car-card:hover .car-card-image img { transform: scale(1.04); }
+.car-card:hover .car-card-image img {
+  transform: scale(1.04);
+}
 
 .car-badge {
   position: absolute;
@@ -242,6 +260,7 @@
   font-size: 17px;
   font-weight: 700;
   color: var(--black);
+  margin: 0;
 }
 
 .car-price {
@@ -277,9 +296,13 @@
   font-size: 13px;
   font-weight: 600;
   transition: background 0.2s, color 0.2s;
+  cursor: pointer;
 }
 
-.car-card-btn:hover { background: var(--blue); color: var(--white); }
+.car-card-btn:hover {
+  background: var(--blue);
+  color: var(--white);
+}
 
 /* No results */
 .no-results {
@@ -295,17 +318,55 @@
   gap: 12px;
 }
 
-.no-results span { font-size: 48px; }
-.no-results h3 { font-family: var(--font-display); font-size: 22px; color: var(--black); }
-.no-results p  { font-size: 15px; color: var(--gray-dark); }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .inventory-layout { grid-template-columns: 1fr; }
-  .filters-sidebar { position: static; }
-  .inventory-grid  { grid-template-columns: repeat(2, 1fr); }
+.no-results span {
+  font-size: 48px;
 }
 
-@media (max-width: 540px) {
-  .inventory-grid { grid-template-columns: 1fr; }
+.no-results h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--black);
+  margin: 0;
+}
+
+.no-results p {
+  font-size: 15px;
+  color: var(--gray-dark);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .inventory-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .filters-sidebar {
+    position: static;
+  }
+  
+  .inventory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .inventory-header h1 {
+    font-size: 28px;
+  }
+  
+  .inventory-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .sort-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
 }

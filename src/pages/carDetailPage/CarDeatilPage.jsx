@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-//import './CarDetailPage.css';
+import './CarDeatilPage.css'; 
 
 const CarDetailPage = ({ car, user, onNavigate }) => {
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', date: '', time: '' });

@@ -173,7 +173,7 @@ const HomePage = ({ onNavigate }) => {
       {/* ── WHY US ── */}
       <section className="why-us">
         <div className="container">
-          <h2>Why Choose DriveWise?</h2>
+          <h2>Why Choose Shubham's Car Dealership?</h2>
           <div className="why-grid">
             <div className="why-card">
               <span className="why-icon">🔍</span>

@@ -8,7 +8,7 @@ const Footer = ({ onNavigate }) => {
 
         <div className="footer-brand">
           <button className="footer-logo" onClick={() => onNavigate('home')}>
-            🚗 DriveWise
+            🚗 Shubham's Car Dealership
           </button>
           <p>Quality used cars at honest prices. Find your perfect vehicle today.</p>
         </div>

@@ -1,25 +1,29 @@
 import React, { useState } from 'react';
-import './Dashboard.css';
-import ChatAssistant from '../components/tools/ChatAssistant';
-import CarRecognizer from '../components/tools/CarRecognizer';
-import FinanceCalculator from '../components/tools/FinanceCalculator';
+import './DashboardPage.css';
+import ChatAssistant from '../../components/tools/ChatAssistant';
+import CarRecognizer from '../../components/tools/CarRecognizer';
+import FinanceCalculator from '../../components/tools/FinanceCalculator';
 
 const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   const [activeTool, setActiveTool] = useState('chat');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const tools = [
-    { id: 'chat',     label: 'AI Assistant',       icon: '💬', desc: 'Chat about cars & buying'   },
-    { id: 'recognizer', label: 'Car Recognizer',   icon: '🔍', desc: 'Identify car brand from photo' },
-    { id: 'finance',  label: 'Finance Calculator', icon: '💰', desc: 'Estimate monthly payments'   },
+    { id: 'chat', label: 'AI Assistant', icon: '💬', desc: 'Chat about cars & buying' },
+    { id: 'recognizer', label: 'Car Recognizer', icon: '🔍', desc: 'Identify car brand from photo' },
+    { id: 'finance', label: 'Finance Calculator', icon: '💰', desc: 'Estimate monthly payments' },
   ];
 
   const renderTool = () => {
     switch (activeTool) {
-      case 'chat':      return <ChatAssistant user={user} sessionToken={sessionToken} />;
-      case 'recognizer':return <CarRecognizer sessionToken={sessionToken} />;
-      case 'finance':   return <FinanceCalculator />;
-      default:          return <ChatAssistant user={user} sessionToken={sessionToken} />;
+      case 'chat':
+        return <ChatAssistant user={user} sessionToken={sessionToken} />;
+      case 'recognizer':
+        return <CarRecognizer sessionToken={sessionToken} />;
+      case 'finance':
+        return <FinanceCalculator />;
+      default:
+        return <ChatAssistant user={user} sessionToken={sessionToken} />;
     }
   };
 
@@ -30,27 +34,22 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
 
   return (
     <div className="dashboard-page">
-
-      {/* ── Sidebar ── */}
       <aside className="dash-sidebar">
         <div className="dash-sidebar-top">
-          {/* Logo / back to site */}
           <button className="dash-logo" onClick={() => onNavigate('home')}>
             🚗 DriveWise
           </button>
 
-          {/* User info */}
           <div className="dash-user">
             <div className="dash-avatar">
-              {user.username?.charAt(0).toUpperCase()}
+              {user?.username?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="dash-user-info">
-              <strong>{user.username}</strong>
-              <span>{user.email}</span>
+              <strong>{user?.username || 'User'}</strong>
+              <span>{user?.email || 'user@email.com'}</span>
             </div>
           </div>
 
-          {/* Nav links */}
           <nav className="dash-nav">
             <p className="dash-nav-label">Browse</p>
             <button className="dash-nav-link" onClick={() => onNavigate('home')}>
@@ -78,10 +77,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
         </button>
       </aside>
 
-      {/* ── Main content ── */}
       <main className="dash-main">
-
-        {/* Mobile top bar */}
         <div className="dash-mobile-bar">
           <button className="dash-logo" onClick={() => onNavigate('home')}>
             🚗 DriveWise
@@ -94,7 +90,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
           </button>
         </div>
 
-        {/* Mobile tool tabs */}
         <div className="dash-mobile-tabs">
           {tools.map(tool => (
             <button
@@ -108,15 +103,14 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
           ))}
         </div>
 
-        {/* Mobile slide-out menu */}
         {mobileMenuOpen && (
           <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
             <div className="mobile-menu" onClick={e => e.stopPropagation()}>
               <div className="mobile-menu-user">
-                <div className="dash-avatar">{user.username?.charAt(0).toUpperCase()}</div>
+                <div className="dash-avatar">{user?.username?.charAt(0).toUpperCase() || 'U'}</div>
                 <div>
-                  <strong>{user.username}</strong>
-                  <span>{user.email}</span>
+                  <strong>{user?.username || 'User'}</strong>
+                  <span>{user?.email || 'user@email.com'}</span>
                 </div>
               </div>
               <button className="mobile-menu-link" onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}>🏠 Home</button>
@@ -126,11 +120,9 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
           </div>
         )}
 
-        {/* Tool area */}
         <div className="dash-tool-area">
           {renderTool()}
         </div>
-
       </main>
     </div>
   );

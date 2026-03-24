@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-//import './Login.css';
-//import { API_BASE_URL } from '../config';
+import './LoginPage.css';
+import { API_BASE_URL } from '../../config';
 
 const Login = ({ onLoginSuccess, onNavigate }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -38,7 +38,6 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
         <button className="auth-back" onClick={() => onNavigate('home')}>
           ← Back to Home
         </button>

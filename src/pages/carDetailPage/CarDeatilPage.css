@@ -1,4 +1,6 @@
-.car-detail-page { padding-bottom: 64px; }
+.car-detail-page {
+  padding-bottom: 64px;
+}
 
 /* Breadcrumb */
 .breadcrumb {
@@ -12,6 +14,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .breadcrumb button {
@@ -21,13 +24,21 @@
   font-size: 14px;
   color: var(--blue);
   font-weight: 500;
+  cursor: pointer;
 }
 
-.breadcrumb button:hover { text-decoration: underline; }
+.breadcrumb button:hover {
+  text-decoration: underline;
+}
 
-.breadcrumb span:not(.container span:last-child) { color: var(--gray); }
+.breadcrumb span {
+  color: var(--gray);
+}
 
-.breadcrumb span:last-child { color: var(--charcoal); font-weight: 500; }
+.breadcrumb span:last-child {
+  color: var(--charcoal);
+  font-weight: 500;
+}
 
 /* Layout */
 .detail-layout {
@@ -37,8 +48,12 @@
   margin-top: 32px;
 }
 
-/* ── Left ── */
-.detail-left { display: flex; flex-direction: column; gap: 24px; }
+/* ── Left Side ── */
+.detail-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
 .detail-image {
   position: relative;
@@ -87,6 +102,7 @@
   color: var(--gray-dark);
   border-radius: 6px;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .tab-btn.active {
@@ -111,7 +127,9 @@
   border-bottom: 1px solid var(--gray-light);
 }
 
-.spec-row:last-child { border-bottom: none; }
+.spec-row:last-child {
+  border-bottom: none;
+}
 
 .spec-label {
   font-size: 14px;
@@ -133,17 +151,21 @@
   padding: 20px 24px;
   list-style: none;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  margin: 0;
 }
 
 .features-list li {
   font-size: 14px;
   font-weight: 500;
   color: var(--charcoal);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* ── Right ── */
+/* ── Right Side ── */
 .detail-right {
   display: flex;
   flex-direction: column;
@@ -169,6 +191,7 @@
   font-weight: 700;
   color: var(--black);
   line-height: 1.2;
+  margin: 0;
 }
 
 .detail-price {
@@ -203,7 +226,10 @@
   padding: 16px;
 }
 
-.finance-teaser span { font-size: 24px; flex-shrink: 0; }
+.finance-teaser span {
+  font-size: 24px;
+  flex-shrink: 0;
+}
 
 .finance-teaser strong {
   font-size: 15px;
@@ -216,6 +242,7 @@
 .finance-teaser p {
   font-size: 13px;
   color: var(--gray-dark);
+  margin: 0;
 }
 
 /* Booking card */
@@ -231,7 +258,7 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--black);
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
 }
 
 .booking-form {
@@ -280,6 +307,7 @@
   font-size: 13px;
   color: var(--gray-dark);
   text-align: center;
+  margin: 0;
 }
 
 .booking-login-note button {
@@ -288,6 +316,11 @@
   color: var(--blue);
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.booking-login-note button:hover {
+  text-decoration: underline;
 }
 
 .booking-submit {
@@ -300,9 +333,12 @@
   font-size: 15px;
   font-weight: 600;
   transition: background 0.2s;
+  cursor: pointer;
 }
 
-.booking-submit:hover { background: var(--blue-dark); }
+.booking-submit:hover {
+  background: var(--blue-dark);
+}
 
 .booking-success {
   display: flex;
@@ -314,11 +350,24 @@
   padding: 16px;
 }
 
-.booking-success span { font-size: 20px; }
-.booking-success strong { display: block; font-size: 15px; color: #166534; margin-bottom: 4px; }
-.booking-success p { font-size: 13px; color: #166534; }
+.booking-success span {
+  font-size: 20px;
+}
 
-/* Enquire */
+.booking-success strong {
+  display: block;
+  font-size: 15px;
+  color: #166534;
+  margin-bottom: 4px;
+}
+
+.booking-success p {
+  font-size: 13px;
+  color: #166534;
+  margin: 0;
+}
+
+/* Enquire box */
 .enquire-box {
   background: var(--white);
   border: 1px solid var(--gray-light);
@@ -330,11 +379,43 @@
   gap: 12px;
 }
 
-.enquire-box p { font-size: 14px; color: var(--gray-dark); }
+.enquire-box p {
+  font-size: 14px;
+  color: var(--gray-dark);
+  margin: 0;
+}
 
 /* Responsive */
 @media (max-width: 900px) {
-  .detail-layout { grid-template-columns: 1fr; }
-  .detail-right { position: static; }
-  .features-list { grid-template-columns: 1fr; }
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .detail-right {
+    position: static;
+  }
+  
+  .features-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-summary h1 {
+    font-size: 22px;
+  }
+  
+  .detail-price {
+    font-size: 28px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .booking-card {
+    padding: 20px;
+  }
 }

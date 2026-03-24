@@ -16,7 +16,7 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
         {/* Logo */}
         <button className="navbar-logo" onClick={() => onNavigate('home')}>
           <span className="logo-icon">🚗</span>
-          <span className="logo-text">DriveWise</span>
+          <span className="logo-text">Shubham's Car Dealership</span>
         </button>
 
         {/* Desktop links */}
