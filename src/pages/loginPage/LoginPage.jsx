@@ -43,7 +43,7 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
         </button>
 
         <div className="auth-header">
-          <h1>🚗 DriveWise</h1>
+          <h1>🚗 Shubham's Car Dealership</h1>
           <h2>Welcome back</h2>
           <p>Sign in to your account</p>
         </div>

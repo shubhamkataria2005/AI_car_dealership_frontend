@@ -29,13 +29,13 @@ const Footer = ({ onNavigate }) => {
         <div className="footer-contact">
           <h4>Contact</h4>
           <p>📍 Auckland, New Zealand</p>
-          <p>📞 +64 9 123 4567</p>
-          <p>✉️ hello@drivewise.co.nz</p>
+          <p>📞 +64 220632005</p>
+          <p>✉️ hello@shubhamscardealership.co.nz</p>
         </div>
 
       </div>
       <div className="footer-bottom">
-        <p>© 2025 DriveWise. All rights reserved.</p>
+        <p>© 2025 Shubham's Car Dealership. All rights reserved.</p>
       </div>
     </footer>
   );

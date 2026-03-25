@@ -51,7 +51,7 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
         </button>
 
         <div className="auth-header">
-          <h1>🚗 DriveWise</h1>
+          <h1>🚗 Shubham's Car Dealership</h1>
           <h2>Create account</h2>
           <p>Join us to access all features</p>
         </div>
