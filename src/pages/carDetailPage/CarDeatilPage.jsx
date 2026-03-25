@@ -1,27 +1,32 @@
-import React, { useState } from 'react';
-import './CarDeatilPage.css'; 
+import React, { useState, useEffect } from 'react';
+import './CarDeatilPage.css';
+import { api } from '../../services/api';
 
-const CarDetailPage = ({ car, user, onNavigate }) => {
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const CarDetailPage = ({ car: propCar, user, onNavigate, sessionToken }) => {
+  const [car, setCar] = useState(propCar);
+  const [loading, setLoading] = useState(!propCar);
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', date: '', time: '' });
-  const [bookingStatus, setBookingStatus] = useState(''); // 'success' | 'error' | ''
+  const [bookingStatus, setBookingStatus] = useState('');
   const [activeTab, setActiveTab] = useState('details');
+  const [messageStatus, setMessageStatus] = useState('');
+  const [messageText, setMessageText] = useState('');
+  const [showMessageForm, setShowMessageForm] = useState(false);
 
-  // Fallback if no car passed
-  if (!car) {
-    return (
-      <div className="car-detail-page page">
-        <div className="container">
-          <p style={{ padding: '48px 0', textAlign: 'center', color: 'var(--gray-dark)' }}>
-            No car selected.{' '}
-            <button style={{ color: 'var(--blue)', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}
-              onClick={() => onNavigate('inventory')}>
-              Browse inventory →
-            </button>
-          </p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!propCar) {
+      const carId = window.location.pathname.split('/').pop();
+      api.getCarById(carId)
+        .then(data => {
+          if (data.success) {
+            setCar(data.car);
+          }
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    }
+  }, [propCar]);
 
   const handleBookingChange = (e) =>
     setBookingForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -32,25 +37,90 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
       onNavigate('login');
       return;
     }
-    // In a real app: POST to backend
     setBookingStatus('success');
     setBookingForm({ name: '', phone: '', date: '', time: '' });
+    setTimeout(() => setBookingStatus(''), 5000);
   };
 
+  const handleSendMessage = async () => {
+    if (!user) {
+      onNavigate('login');
+      return;
+    }
+    if (!messageText.trim()) return;
+    
+    try {
+      const token = sessionToken || localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/messages/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          senderId: user.id,
+          receiverId: car.sellerId,
+          carId: car.id,
+          content: messageText
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessageStatus('success');
+        setMessageText('');
+        setShowMessageForm(false);
+        setTimeout(() => setMessageStatus(''), 3000);
+      } else {
+        setMessageStatus('error');
+        setTimeout(() => setMessageStatus(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessageStatus('error');
+      setTimeout(() => setMessageStatus(''), 3000);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="car-detail-page page">
+        <div className="container">
+          <p style={{ padding: '48px 0', textAlign: 'center' }}>Loading car details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!car) {
+    return (
+      <div className="car-detail-page page">
+        <div className="container">
+          <p style={{ padding: '48px 0', textAlign: 'center', color: 'var(--gray-dark)' }}>
+            Car not found.{' '}
+            <button style={{ color: 'var(--blue)', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+              onClick={() => onNavigate('inventory')}>
+              Browse inventory →
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const specs = [
-    { label: 'Year',         value: car.year          },
-    { label: 'Make',         value: car.make          },
-    { label: 'Model',        value: car.model         },
-    { label: 'Mileage',      value: `${car.mileage?.toLocaleString()} km` },
-    { label: 'Fuel Type',    value: car.fuel          },
-    { label: 'Transmission', value: car.transmission  },
-    { label: 'Body Type',    value: car.body          },
+    { label: 'Year', value: car.year },
+    { label: 'Make', value: car.make },
+    { label: 'Model', value: car.model },
+    { label: 'Mileage', value: `${car.mileage?.toLocaleString()} km` },
+    { label: 'Fuel Type', value: car.fuel },
+    { label: 'Transmission', value: car.transmission },
+    { label: 'Body Type', value: car.bodyType },
+    { label: 'Seller', value: car.sellerName },
   ];
 
   return (
     <div className="car-detail-page page">
-
-      {/* Breadcrumb */}
       <div className="breadcrumb">
         <div className="container">
           <button onClick={() => onNavigate('home')}>Home</button>
@@ -63,26 +133,19 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
 
       <div className="container">
         <div className="detail-layout">
-
-          {/* ── Left: Image + tabs ── */}
+          {/* Left side - Image and Specs */}
           <div className="detail-left">
             <div className="detail-image">
-              <img src={car.image} alt={`${car.year} ${car.make} ${car.model}`} />
-              {car.badge && <span className="car-badge-lg">{car.badge}</span>}
+              <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80'} 
+                   alt={`${car.year} ${car.make} ${car.model}`} />
+              <span className="car-badge-lg">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
             </div>
 
-            {/* Tabs */}
             <div className="detail-tabs">
-              <button
-                className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
-                onClick={() => setActiveTab('details')}
-              >
+              <button className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>
                 Specifications
               </button>
-              <button
-                className={`tab-btn ${activeTab === 'features' ? 'active' : ''}`}
-                onClick={() => setActiveTab('features')}
-              >
+              <button className={`tab-btn ${activeTab === 'features' ? 'active' : ''}`} onClick={() => setActiveTab('features')}>
                 Features
               </button>
             </div>
@@ -100,18 +163,15 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
 
             {activeTab === 'features' && (
               <ul className="features-list">
-                {['Bluetooth Audio', 'Reverse Camera', 'Lane Keep Assist',
-                  'Apple CarPlay', 'Cruise Control', 'Alloy Wheels',
-                  'Keyless Entry', 'Dual-zone Climate Control'].map(f => (
+                {['Bluetooth Audio', 'Reverse Camera', 'Lane Keep Assist', 'Apple CarPlay', 'Cruise Control', 'Alloy Wheels', 'Keyless Entry', 'Dual-zone Climate Control'].map(f => (
                   <li key={f}>✓ {f}</li>
                 ))}
               </ul>
             )}
           </div>
 
-          {/* ── Right: Price + booking ── */}
+          {/* Right side - Price, Booking, and Message */}
           <div className="detail-right">
-
             <div className="detail-summary">
               <h1>{car.year} {car.make} {car.model}</h1>
               <div className="detail-price">${car.price?.toLocaleString()}</div>
@@ -120,13 +180,93 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
                 <span>⛽ {car.fuel}</span>
                 <span>⚙️ {car.transmission}</span>
               </div>
+              <div className="detail-quick-specs">
+                <span>👤 Seller: {car.sellerName}</span>
+                <span>📅 Listed {new Date(car.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            {/* MESSAGE SELLER SECTION - WITH SEND BUTTON */}
+            <div className="booking-card">
+              <h3>💬 Message Seller</h3>
+              
+              {!user ? (
+                <div className="enquire-box">
+                  <p>You need to login to contact the seller</p>
+                  <button className="booking-submit" onClick={() => onNavigate('login')}>
+                    Login to Message
+                  </button>
+                </div>
+              ) : user.id === car.sellerId ? (
+                <div className="enquire-box">
+                  <p>This is your listing. You can't message yourself.</p>
+                </div>
+              ) : (
+                <>
+                  {messageStatus === 'success' && (
+                    <div className="booking-success">
+                      <span>✅</span>
+                      <div>
+                        <strong>Message Sent!</strong>
+                        <p>The seller will get back to you soon.</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {messageStatus === 'error' && (
+                    <div className="auth-error">
+                      ❌ Failed to send message. Please try again.
+                    </div>
+                  )}
+                  
+                  {!showMessageForm ? (
+                    <button 
+                      className="booking-submit" 
+                      onClick={() => setShowMessageForm(true)}
+                      style={{ background: '#2563eb' }}
+                    >
+                      📧 Contact Seller
+                    </button>
+                  ) : (
+                    <div className="booking-form">
+                      <div className="form-field">
+                        <label>Your Message</label>
+                        <textarea
+                          rows="4"
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
+                          placeholder={`Hi ${car.sellerName}, I'm interested in the ${car.year} ${car.make} ${car.model}. Is it still available?`}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'inherit', marginBottom: '12px' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                        <button 
+                          className="booking-submit" 
+                          onClick={handleSendMessage}
+                          disabled={!messageText.trim()}
+                          style={{ flex: 1 }}
+                        >
+                          📤 Send Message
+                        </button>
+                        <button 
+                          className="btn-outline" 
+                          onClick={() => setShowMessageForm(false)}
+                          style={{ padding: '12px 20px' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Finance teaser */}
             <div className="finance-teaser">
               <span>💳</span>
               <div>
-                <strong>From ~${Math.round(car.price / 60 / 10) * 10}/month</strong>
+                <strong>From ~${Math.round((car.price || 0) / 60 / 10) * 10}/month</strong>
                 <p>Over 60 months. Use our finance calculator in the dashboard.</p>
               </div>
             </div>
@@ -210,7 +350,7 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
               )}
             </div>
 
-            {/* Enquire */}
+            {/* AI Assistant */}
             <div className="enquire-box">
               <p>Have questions about this vehicle?</p>
               <button
@@ -218,7 +358,7 @@ const CarDetailPage = ({ car, user, onNavigate }) => {
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => user ? onNavigate('dashboard') : onNavigate('login')}
               >
-                💬 Chat with AI Assistant
+                🤖 Chat with AI Assistant
               </button>
             </div>
 

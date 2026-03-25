@@ -26,14 +26,29 @@ function App() {
   const handleLoginSuccess = (userData, token) => {
     setUser(userData);
     setSessionToken(token);
+    // Store token in localStorage for persistence
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
     handleNavigate('dashboard');
   };
 
   const handleLogout = () => {
     setUser(null);
     setSessionToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     handleNavigate('home');
   };
+
+  // Check for existing session on load
+  React.useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (storedToken && storedUser) {
+      setSessionToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   return (
     <Router>
@@ -91,17 +106,30 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
         <Routes>
           <Route path="/" element={<HomePage onNavigate={handleNavigate} />} />
           <Route path="/inventory" element={<InventoryPage onNavigate={handleNavigate} />} />
-          <Route path="/car/:id" element={<CarDetailPage car={currentCar} user={user} onNavigate={handleNavigate} />} />
-          <Route path="/dashboard" element={
-            user ? 
-              <DashboardPage 
+          <Route 
+            path="/car/:id" 
+            element={
+              <CarDetailPage 
+                car={currentCar} 
                 user={user} 
                 sessionToken={sessionToken}
-                onLogout={onLogout} 
                 onNavigate={handleNavigate} 
-              /> : 
-              <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />
-          } />
+              />
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              user ? 
+                <DashboardPage 
+                  user={user} 
+                  sessionToken={sessionToken}
+                  onLogout={onLogout} 
+                  onNavigate={handleNavigate} 
+                /> : 
+                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />
+            } 
+          />
           <Route path="/login" element={<LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />} />
           <Route path="/register" element={<RegisterPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />} />
         </Routes>

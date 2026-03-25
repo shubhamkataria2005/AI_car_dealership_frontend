@@ -1,32 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './HomePage.css';
-
-const FEATURED_CARS = [
-  {
-    id: 1, make: 'Toyota', model: 'Camry', year: 2021, price: 24900,
-    mileage: 32000, fuel: 'Petrol', transmission: 'Automatic',
-    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600&q=80',
-    badge: 'Great Value'
-  },
-  {
-    id: 2, make: 'Honda', model: 'CR-V', year: 2020, price: 31500,
-    mileage: 41000, fuel: 'Petrol', transmission: 'Automatic',
-    image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80',
-    badge: 'Popular'
-  },
-  {
-    id: 3, make: 'Mazda', model: 'CX-5', year: 2022, price: 37800,
-    mileage: 18000, fuel: 'Petrol', transmission: 'Automatic',
-    image: 'https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=600&q=80',
-    badge: 'Low KMs'
-  },
-];
+import { api } from '../../services/api';
 
 const HomePage = ({ onNavigate }) => {
+  const [featuredCars, setFeaturedCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getAllCars()
+      .then(data => {
+        if (data.success) {
+          setFeaturedCars(data.cars.slice(0, 3));
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="home-page page">
-
-      {/* ── HERO ── */}
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-content">
@@ -44,7 +38,7 @@ const HomePage = ({ onNavigate }) => {
             <div className="hero-divider" />
             <div className="hero-stats">
               <div className="hero-stat">
-                <strong>200+</strong>
+                <strong>{loading ? '...' : featuredCars.length}+</strong>
                 <span>Cars in stock</span>
               </div>
               <div className="hero-stat">
@@ -63,20 +57,19 @@ const HomePage = ({ onNavigate }) => {
               <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" alt="Premium used cars" />
             </div>
             <div className="hero-image-badge">
-              <strong>200+</strong>
+              <strong>{loading ? '...' : featuredCars.length}+</strong>
               <span>Vehicles available now</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── SEARCH ── */}
       <section className="search-section">
         <div className="container">
           <div className="search-bar-home">
             <div className="search-field">
               <label>Make</label>
-              <select>
+              <select id="search-make">
                 <option value="">Any make</option>
                 <option>Toyota</option><option>Honda</option>
                 <option>Mazda</option><option>Subaru</option>
@@ -85,28 +78,38 @@ const HomePage = ({ onNavigate }) => {
             </div>
             <div className="search-field">
               <label>Max Price</label>
-              <select>
+              <select id="search-price">
                 <option value="">Any price</option>
-                <option>Under $15,000</option><option>Under $25,000</option>
-                <option>Under $40,000</option><option>Under $60,000</option>
+                <option value="15000">Under $15,000</option>
+                <option value="25000">Under $25,000</option>
+                <option value="40000">Under $40,000</option>
+                <option value="60000">Under $60,000</option>
               </select>
             </div>
             <div className="search-field">
               <label>Body Type</label>
-              <select>
+              <select id="search-body">
                 <option value="">Any type</option>
                 <option>Sedan</option><option>SUV</option>
                 <option>Hatchback</option><option>Ute</option><option>Wagon</option>
               </select>
             </div>
-            <button className="search-btn" onClick={() => onNavigate('inventory')}>
+            <button className="search-btn" onClick={() => {
+              const make = document.getElementById('search-make').value;
+              const maxPrice = document.getElementById('search-price').value;
+              const bodyType = document.getElementById('search-body').value;
+              const params = {};
+              if (make) params.make = make;
+              if (maxPrice) params.maxPrice = maxPrice;
+              if (bodyType) params.bodyType = bodyType;
+              onNavigate('inventory', { filters: params });
+            }}>
               Search Cars
             </button>
           </div>
         </div>
       </section>
 
-      {/* ── FEATURED CARS ── */}
       <section className="featured-section">
         <div className="container">
           <div className="section-header">
@@ -120,36 +123,40 @@ const HomePage = ({ onNavigate }) => {
           </div>
 
           <div className="cars-grid">
-            {FEATURED_CARS.map(car => (
-              <div key={car.id} className="car-card" onClick={() => onNavigate('car-detail', car)}>
-                <div className="car-card-image">
-                  <img src={car.image} alt={`${car.year} ${car.make} ${car.model}`} />
-                  {car.badge && <span className="car-badge">{car.badge}</span>}
+            {loading ? (
+              <div>Loading cars...</div>
+            ) : featuredCars.length === 0 ? (
+              <div>No cars available yet. Be the first to list one!</div>
+            ) : (
+              featuredCars.map(car => (
+                <div key={car.id} className="car-card" onClick={() => onNavigate('car-detail', car)}>
+                  <div className="car-card-image">
+                    <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'} 
+                         alt={`${car.year} ${car.make} ${car.model}`} />
+                    <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
+                  </div>
+                  <div className="car-card-body">
+                    <div className="car-card-title">
+                      <h3>{car.make} {car.model}</h3>
+                      <span className="car-price">${car.price?.toLocaleString()}</span>
+                    </div>
+                    <div className="car-card-specs">
+                      <span>{car.mileage?.toLocaleString()} km</span>
+                      <span>{car.fuel}</span>
+                      <span>{car.transmission}</span>
+                    </div>
+                    <div className="car-card-footer">
+                      <button className="car-card-btn">View Details</button>
+                      <span className="car-card-year">{car.year}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="car-card-body">
-                  <div className="car-card-title">
-                    <h3>{car.make} {car.model}</h3>
-                    <span className="car-price">${car.price.toLocaleString()}</span>
-                  </div>
-                  <div className="car-card-specs">
-                    <span>{car.mileage.toLocaleString()} km</span>
-                    <span>{car.fuel}</span>
-                    <span>{car.transmission}</span>
-                  </div>
-                  <div className="car-card-footer">
-                    <button className="car-card-btn" onClick={e => { e.stopPropagation(); onNavigate('car-detail', car); }}>
-                      View Details
-                    </button>
-                    <span className="car-card-year">{car.year}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── WHY US ── */}
       <section className="why-us">
         <div className="container">
           <div className="why-us-header">
@@ -173,7 +180,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── CTA ── */}
       <section className="cta-section">
         <div className="container">
           <div className="cta-box">
@@ -193,7 +199,6 @@ const HomePage = ({ onNavigate }) => {
           </div>
         </div>
       </section>
-
     </div>
   );
 };
