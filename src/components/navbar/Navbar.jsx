@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 
 const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
@@ -9,12 +9,18 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
     { label: 'Inventory', page: 'inventory' },
   ];
 
+  // Close mobile menu when navigating
+  const handleNavigate = (page) => {
+    onNavigate(page);
+    setMenuOpen(false);
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-inner">
 
         {/* Logo */}
-        <button className="navbar-logo" onClick={() => onNavigate('home')}>
+        <button className="navbar-logo" onClick={() => handleNavigate('home')}>
           <span className="logo-icon">🚗</span>
           <span className="logo-text">Shubham's Car Dealership</span>
         </button>
@@ -25,7 +31,7 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
             <li key={link.page}>
               <button
                 className={`nav-link ${currentPage === link.page ? 'active' : ''}`}
-                onClick={() => onNavigate(link.page)}
+                onClick={() => handleNavigate(link.page)}
               >
                 {link.label}
               </button>
@@ -39,19 +45,22 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
             <>
               <button
                 className={`nav-link ${currentPage === 'dashboard' ? 'active' : ''}`}
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => handleNavigate('dashboard')}
               >
                 Dashboard
               </button>
               <span className="nav-username">Hi, {user.username}</span>
-              <button className="btn-logout" onClick={onLogout}>Logout</button>
+              <button className="btn-logout" onClick={() => {
+                onLogout();
+                setMenuOpen(false);
+              }}>Logout</button>
             </>
           ) : (
             <>
-              <button className="btn-nav-login" onClick={() => onNavigate('login')}>
+              <button className="btn-nav-login" onClick={() => handleNavigate('login')}>
                 Login
               </button>
-              <button className="btn-nav-register" onClick={() => onNavigate('register')}>
+              <button className="btn-nav-register" onClick={() => handleNavigate('register')}>
                 Register
               </button>
             </>
@@ -77,7 +86,7 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
             <button
               key={link.page}
               className={`mobile-link ${currentPage === link.page ? 'active' : ''}`}
-              onClick={() => { onNavigate(link.page); setMenuOpen(false); }}
+              onClick={() => handleNavigate(link.page)}
             >
               {link.label}
             </button>
@@ -87,13 +96,16 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
             <>
               <button
                 className="mobile-link"
-                onClick={() => { onNavigate('dashboard'); setMenuOpen(false); }}
+                onClick={() => handleNavigate('dashboard')}
               >
                 Dashboard
               </button>
               <button
                 className="mobile-link mobile-logout"
-                onClick={() => { onLogout(); setMenuOpen(false); }}
+                onClick={() => {
+                  onLogout();
+                  setMenuOpen(false);
+                }}
               >
                 Logout
               </button>
@@ -102,13 +114,13 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
             <>
               <button
                 className="mobile-link"
-                onClick={() => { onNavigate('login'); setMenuOpen(false); }}
+                onClick={() => handleNavigate('login')}
               >
                 Login
               </button>
               <button
                 className="mobile-link"
-                onClick={() => { onNavigate('register'); setMenuOpen(false); }}
+                onClick={() => handleNavigate('register')}
               >
                 Register
               </button>

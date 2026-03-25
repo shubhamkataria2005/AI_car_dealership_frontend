@@ -13,7 +13,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   const [showListCarForm,  setShowListCarForm]  = useState(false);
   const [unreadCount,      setUnreadCount]      = useState(0);
 
-  // List car form state
   const [carFormData,   setCarFormData]   = useState({
     make: '', model: '', year: new Date().getFullYear(),
     price: '', mileage: '', fuel: 'Petrol',
@@ -23,13 +22,23 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   const [listingStatus, setListingStatus] = useState('');
 
   const token = sessionToken || localStorage.getItem('token');
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
-  // ── Poll unread count ────────────────────────────────────────────────────
   useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // every 30s
-    return () => clearInterval(interval);
-  }, []);
+    console.log('Dashboard loaded with user:', user);
+    if (!user && !token) {
+      console.log('No user found, redirecting to login');
+      onNavigate('login');
+    }
+  }, [user, token, onNavigate]);
+
+  useEffect(() => {
+    if (user && token) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, token]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -38,10 +47,11 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
       });
       const data = await res.json();
       if (data.count !== undefined) setUnreadCount(data.count);
-    } catch {}
+    } catch (err) {
+      console.error('Error fetching unread count:', err);
+    }
   };
 
-  // ── Tools definition ─────────────────────────────────────────────────────
   const tools = [
     { id: 'messages',   label: 'Messages',           icon: '✉️',  desc: 'Inbox & conversations'          },
     { id: 'chat',       label: 'AI Assistant',        icon: '💬',  desc: 'Chat about cars & buying'        },
@@ -49,7 +59,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
     { id: 'finance',    label: 'Finance Calculator',  icon: '💰',  desc: 'Estimate monthly payments'       },
   ];
 
-  // ── Handle tool click ────────────────────────────────────────────────────
   const handleToolClick = (id) => {
     setActiveTool(id);
     setShowListCarForm(false);
@@ -57,7 +66,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
     if (id === 'messages') setUnreadCount(0);
   };
 
-  // ── List car handlers ────────────────────────────────────────────────────
   const handleCarFormChange = e =>
     setCarFormData({ ...carFormData, [e.target.name]: e.target.value });
 
@@ -67,7 +75,10 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/cars/list`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token}` 
+        },
         body:    JSON.stringify({
           ...carFormData,
           price:    parseFloat(carFormData.price),
@@ -84,18 +95,21 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
           transmission: 'Automatic', bodyType: 'Sedan',
           description: '', imageUrl: ''
         });
-        setTimeout(() => { setListingStatus(''); setShowListCarForm(false); }, 2000);
+        setTimeout(() => { 
+          setListingStatus(''); 
+          setShowListCarForm(false); 
+        }, 2000);
       } else {
         setListingStatus('error');
         setTimeout(() => setListingStatus(''), 3000);
       }
-    } catch {
+    } catch (err) {
+      console.error('Error listing car:', err);
       setListingStatus('error');
       setTimeout(() => setListingStatus(''), 3000);
     }
   };
 
-  // ── Render active tool ───────────────────────────────────────────────────
   const renderTool = () => {
     if (showListCarForm) return renderListCarForm();
     switch (activeTool) {
@@ -125,51 +139,90 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
           </div>
         )}
         <form onSubmit={handleListCar} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {[
-            [{ name: 'make',  label: 'Make *',       placeholder: 'e.g., Toyota', type: 'text'   },
-             { name: 'model', label: 'Model *',      placeholder: 'e.g., Camry',  type: 'text'   }],
-            [{ name: 'year',  label: 'Year *',       placeholder: '2023',         type: 'number' },
-             { name: 'price', label: 'Price (NZD)*', placeholder: '25000',        type: 'number' }],
-            [{ name: 'mileage', label: 'Mileage (km)*', placeholder: '35000', type: 'number' }]
-          ].map((row, ri) => (
-            <div key={ri} style={{ display: 'grid', gridTemplateColumns: `repeat(${row.length}, 1fr)`, gap: '12px' }}>
-              {row.map(f => (
-                <div key={f.name}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>{f.label}</label>
-                  <input type={f.type} name={f.name} value={carFormData[f.name]} onChange={handleCarFormChange}
-                    placeholder={f.placeholder} required
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
-                </div>
-              ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Make *</label>
+              <input type="text" name="make" value={carFormData.make} onChange={handleCarFormChange}
+                placeholder="e.g., Toyota" required
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
             </div>
-          ))}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-            {[
-              { name: 'fuel',         label: 'Fuel',         opts: ['Petrol','Diesel','Hybrid','Electric'] },
-              { name: 'transmission', label: 'Transmission', opts: ['Automatic','Manual'] },
-              { name: 'bodyType',     label: 'Body Type',    opts: ['Sedan','SUV','Hatchback','Ute','Wagon','Coupe'] }
-            ].map(f => (
-              <div key={f.name}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>{f.label}</label>
-                <select name={f.name} value={carFormData[f.name]} onChange={handleCarFormChange}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }}>
-                  {f.opts.map(o => <option key={o}>{o}</option>)}
-                </select>
-              </div>
-            ))}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Model *</label>
+              <input type="text" name="model" value={carFormData.model} onChange={handleCarFormChange}
+                placeholder="e.g., Camry" required
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
+            </div>
           </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Year *</label>
+              <input type="number" name="year" value={carFormData.year} onChange={handleCarFormChange}
+                placeholder="2023" required
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Price (NZD) *</label>
+              <input type="number" name="price" value={carFormData.price} onChange={handleCarFormChange}
+                placeholder="25000" required
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
+            </div>
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Mileage (km) *</label>
+            <input type="number" name="mileage" value={carFormData.mileage} onChange={handleCarFormChange}
+              placeholder="35000" required
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Fuel</label>
+              <select name="fuel" value={carFormData.fuel} onChange={handleCarFormChange}
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }}>
+                <option>Petrol</option>
+                <option>Diesel</option>
+                <option>Hybrid</option>
+                <option>Electric</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Transmission</label>
+              <select name="transmission" value={carFormData.transmission} onChange={handleCarFormChange}
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }}>
+                <option>Automatic</option>
+                <option>Manual</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Body Type</label>
+              <select name="bodyType" value={carFormData.bodyType} onChange={handleCarFormChange}
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }}>
+                <option>Sedan</option>
+                <option>SUV</option>
+                <option>Hatchback</option>
+                <option>Ute</option>
+                <option>Wagon</option>
+                <option>Coupe</option>
+              </select>
+            </div>
+          </div>
+          
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Image URL</label>
             <input type="text" name="imageUrl" value={carFormData.imageUrl} onChange={handleCarFormChange}
               placeholder="https://example.com/car.jpg"
               style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)' }} />
           </div>
+          
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Description</label>
             <textarea name="description" value={carFormData.description} onChange={handleCarFormChange}
               rows={4} placeholder="Describe the car's condition, features, service history..."
               style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)', fontFamily: 'var(--font-sans)', resize: 'vertical' }} />
           </div>
+          
           <button type="submit" disabled={listingStatus === 'loading'}
             style={{ padding: '13px', background: 'var(--black)', color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)', fontWeight: '700', fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
             {listingStatus === 'loading' ? 'Listing...' : 'List Car for Sale'}
@@ -179,10 +232,12 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
     </div>
   );
 
+  if (!user && !token) {
+    return null;
+  }
+
   return (
     <div className="dashboard-page">
-
-      {/* ── Desktop Sidebar ── */}
       <aside className="dash-sidebar">
         <div className="dash-sidebar-top">
           <button className="dash-logo" onClick={() => onNavigate('home')}>
@@ -220,26 +275,40 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
                 <span>{tool.icon}</span>
                 <span>{tool.label}</span>
                 {tool.id === 'messages' && unreadCount > 0 && (
-                  <span className="nav-unread-badge">{unreadCount}</span>
+                  <span className="nav-unread-badge" style={{ marginLeft: 'auto', background: 'var(--gold)', color: 'white', borderRadius: '10px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold' }}>
+                    {unreadCount}
+                  </span>
                 )}
               </button>
             ))}
+
+            {/* Admin Panel Link */}
+            {isAdmin && (
+              <>
+                <p className="dash-nav-label">Admin</p>
+                <button 
+                  className="dash-nav-link"
+                  onClick={() => {
+                    console.log('Navigating to admin panel');
+                    onNavigate('admin');
+                  }}
+                >
+                  ⚙️ Admin Panel
+                </button>
+              </>
+            )}
           </nav>
         </div>
 
         <button className="dash-logout" onClick={onLogout}>🚪 Logout</button>
       </aside>
 
-      {/* ── Main ── */}
       <main className="dash-main">
-
-        {/* Mobile bar */}
         <div className="dash-mobile-bar">
-          <button className="dash-logo" onClick={() => onNavigate('home')}>🚗 DriveWise</button>
+          <button className="dash-logo" onClick={() => onNavigate('home')}>🚗 Shubham's Cars</button>
           <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>☰</button>
         </div>
 
-        {/* Mobile tabs */}
         <div className="dash-mobile-tabs">
           <button className={`mobile-tab ${showListCarForm ? 'active' : ''}`}
             onClick={() => { setShowListCarForm(true); setActiveTool(null); }}>
@@ -259,9 +328,16 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
               )}
             </button>
           ))}
+          {isAdmin && (
+            <button
+              className="mobile-tab"
+              onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
+            >
+              <span>⚙️</span><span>Admin</span>
+            </button>
+          )}
         </div>
 
-        {/* Mobile overlay menu */}
         {mobileMenuOpen && (
           <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
             <div className="mobile-menu" onClick={e => e.stopPropagation()}>
@@ -275,12 +351,19 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
               <button className="mobile-menu-link" onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}>🏠 Home</button>
               <button className="mobile-menu-link" onClick={() => { onNavigate('inventory'); setMobileMenuOpen(false); }}>🚗 Inventory</button>
               <button className="mobile-menu-link" onClick={() => { setShowListCarForm(true); setActiveTool(null); setMobileMenuOpen(false); }}>📝 List a Car</button>
+              {isAdmin && (
+                <button 
+                  className="mobile-menu-link"
+                  onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
+                >
+                  ⚙️ Admin Panel
+                </button>
+              )}
               <button className="mobile-menu-link mobile-menu-logout" onClick={onLogout}>🚪 Logout</button>
             </div>
           </div>
         )}
 
-        {/* Tool area */}
         <div className="dash-tool-area">
           {renderTool()}
         </div>

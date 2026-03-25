@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/navbar/Navbar.jsx';
 import Footer from './components/footer/Footer.jsx';
 import HomePage from './pages/homePage/HomePage.jsx';
@@ -24,29 +24,34 @@ function App() {
   };
 
   const handleLoginSuccess = (userData, token) => {
+    console.log('Login success, setting user and navigating to dashboard');
     setUser(userData);
     setSessionToken(token);
     // Store token in localStorage for persistence
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
-    handleNavigate('dashboard');
+    // Force navigation to dashboard
+    setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
+    console.log('Logging out');
     setUser(null);
     setSessionToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    handleNavigate('home');
+    setCurrentPage('home');
   };
 
   // Check for existing session on load
-  React.useEffect(() => {
+  useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
+      console.log('Found stored session, restoring user');
       setSessionToken(storedToken);
       setUser(JSON.parse(storedUser));
+      // Don't automatically navigate to dashboard on load, let the URL decide
     }
   }, []);
 
@@ -67,45 +72,79 @@ function App() {
 
 function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, onLoginSuccess, onLogout }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleNavigate = (page, data = null) => {
-    onNavigate(page, data);
-    switch(page) {
+  // Sync navigation state with URL changes
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/' && currentPage !== 'home') {
+      onNavigate('home');
+    } else if (path === '/inventory' && currentPage !== 'inventory') {
+      onNavigate('inventory');
+    } else if (path.startsWith('/car/') && currentPage !== 'car-detail') {
+      onNavigate('car-detail');
+    } else if (path === '/dashboard' && currentPage !== 'dashboard') {
+      onNavigate('dashboard');
+    } else if (path === '/login' && currentPage !== 'login') {
+      onNavigate('login');
+    } else if (path === '/register' && currentPage !== 'register') {
+      onNavigate('register');
+    }
+  }, [location.pathname]);
+
+  // Navigate when currentPage changes
+  useEffect(() => {
+    console.log('Current page changed to:', currentPage);
+    switch(currentPage) {
       case 'home':
-        navigate('/');
+        if (location.pathname !== '/') navigate('/');
         break;
       case 'inventory':
-        navigate('/inventory');
+        if (location.pathname !== '/inventory') navigate('/inventory');
         break;
       case 'car-detail':
-        navigate(`/car/${data?.id || '1'}`);
+        if (currentCar?.id && location.pathname !== `/car/${currentCar.id}`) {
+          navigate(`/car/${currentCar.id}`);
+        }
         break;
       case 'dashboard':
-        navigate('/dashboard');
+        if (location.pathname !== '/dashboard') navigate('/dashboard');
         break;
       case 'login':
-        navigate('/login');
+        if (location.pathname !== '/login') navigate('/login');
         break;
       case 'register':
-        navigate('/register');
+        if (location.pathname !== '/register') navigate('/register');
         break;
       default:
-        navigate('/');
+        if (location.pathname !== '/') navigate('/');
     }
+  }, [currentPage, currentCar, navigate, location.pathname]);
+
+  const handleNavigateWrapper = (page, data = null) => {
+    console.log('Navigating to:', page);
+    onNavigate(page, data);
   };
+
+  // Protect dashboard route
+  if (currentPage === 'dashboard' && !user) {
+    console.log('Protected route: redirecting to login');
+    setTimeout(() => handleNavigateWrapper('login'), 0);
+    return null;
+  }
 
   return (
     <div className="App">
       <Navbar 
         user={user} 
         currentPage={currentPage}
-        onNavigate={handleNavigate} 
+        onNavigate={handleNavigateWrapper} 
         onLogout={onLogout} 
       />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<HomePage onNavigate={handleNavigate} />} />
-          <Route path="/inventory" element={<InventoryPage onNavigate={handleNavigate} />} />
+          <Route path="/" element={<HomePage onNavigate={handleNavigateWrapper} />} />
+          <Route path="/inventory" element={<InventoryPage onNavigate={handleNavigateWrapper} />} />
           <Route 
             path="/car/:id" 
             element={
@@ -113,7 +152,7 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
                 car={currentCar} 
                 user={user} 
                 sessionToken={sessionToken}
-                onNavigate={handleNavigate} 
+                onNavigate={handleNavigateWrapper} 
               />
             } 
           />
@@ -125,16 +164,16 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
                   user={user} 
                   sessionToken={sessionToken}
                   onLogout={onLogout} 
-                  onNavigate={handleNavigate} 
+                  onNavigate={handleNavigateWrapper} 
                 /> : 
-                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />
+                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
             } 
           />
-          <Route path="/login" element={<LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />} />
-          <Route path="/register" element={<RegisterPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigate} />} />
+          <Route path="/login" element={<LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
+          <Route path="/register" element={<RegisterPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
         </Routes>
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer onNavigate={handleNavigateWrapper} />
     </div>
   );
 }

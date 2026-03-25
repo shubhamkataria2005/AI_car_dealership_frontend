@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 import { API_BASE_URL } from '../../config';
 
@@ -6,13 +6,18 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
 
-  const handleChange = e => { setFormData({ ...formData, [e.target.name]: e.target.value }); setError(''); };
+  const handleChange = e => { 
+    setFormData({ ...formData, [e.target.name]: e.target.value }); 
+    setError(''); 
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
@@ -20,11 +25,47 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
         body: JSON.stringify(formData)
       });
       const data = await res.json();
-      if (data.success) onLoginSuccess(data.user, data.sessionToken);
-      else setError(data.message || 'Invalid credentials. Please try again.');
-    } catch { setError('Network error. Please try again.'); }
-    finally { setLoading(false); }
+      
+      if (data.success) {
+        setRedirecting(true);
+        // Store token and user data
+        localStorage.setItem('token', data.sessionToken);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        // Call the success handler which will navigate to dashboard
+        onLoginSuccess(data.user, data.sessionToken);
+      } else {
+        setError(data.message || 'Invalid credentials. Please try again.');
+        setLoading(false);
+      }
+    } catch { 
+      setError('Network error. Please try again.'); 
+      setLoading(false);
+    }
   };
+
+  // If redirecting, don't render the form
+  if (redirecting) {
+    return (
+      <div className="auth-page">
+        <div className="auth-panel-left">
+          <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
+          <div className="auth-panel-overlay" />
+          <div className="auth-panel-text">
+            <span className="auth-panel-eyebrow">Welcome back</span>
+            <h2>Redirecting to Dashboard...</h2>
+            <p>Please wait while we log you in.</p>
+          </div>
+        </div>
+        <div className="auth-panel-right" style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🚗</div>
+            <h2>Logging you in...</h2>
+            <p>Please wait, redirecting to dashboard.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">
@@ -56,11 +97,29 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-field">
             <label htmlFor="email">Email Address</label>
-            <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@email.com" required disabled={loading} />
+            <input 
+              id="email" 
+              type="email" 
+              name="email" 
+              value={formData.email} 
+              onChange={handleChange} 
+              placeholder="you@email.com" 
+              required 
+              disabled={loading} 
+            />
           </div>
           <div className="form-field">
             <label htmlFor="password">Password</label>
-            <input id="password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Your password" required disabled={loading} />
+            <input 
+              id="password" 
+              type="password" 
+              name="password" 
+              value={formData.password} 
+              onChange={handleChange} 
+              placeholder="Your password" 
+              required 
+              disabled={loading} 
+            />
           </div>
           <button type="submit" className="auth-submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
