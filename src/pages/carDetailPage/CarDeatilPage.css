@@ -1,13 +1,15 @@
-.car-detail-page {
-  padding-bottom: 64px;
-}
+/* ══════════════════════════════════════════════
+   CAR DETAIL PAGE — updated to premium design system
+   No more --blue, --bg, --font-display, --font-body
+   ══════════════════════════════════════════════ */
 
-/* Breadcrumb */
+.car-detail-page { padding-bottom: 80px; }
+
+/* ── Breadcrumb ── */
 .breadcrumb {
   background: var(--white);
-  border-bottom: 1px solid var(--gray-light);
+  border-bottom: 1px solid var(--gray-lighter);
   padding: 14px 0;
-  font-size: 14px;
 }
 
 .breadcrumb .container {
@@ -20,74 +22,71 @@
 .breadcrumb button {
   background: none;
   border: none;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--blue);
+  font-family: var(--font-sans);
+  font-size: 13px;
   font-weight: 500;
+  color: var(--gold);
   cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
 }
 
-.breadcrumb button:hover {
-  text-decoration: underline;
-}
+.breadcrumb button:hover { color: var(--black); }
 
-.breadcrumb span {
-  color: var(--gray);
-}
+.breadcrumb span { color: var(--gray); font-size: 13px; }
+.breadcrumb span:last-child { color: var(--charcoal); font-weight: 500; }
 
-.breadcrumb span:last-child {
-  color: var(--charcoal);
-  font-weight: 500;
-}
-
-/* Layout */
+/* ── Layout ── */
 .detail-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 32px;
-  margin-top: 32px;
+  gap: 36px;
+  margin-top: 36px;
 }
 
-/* ── Left Side ── */
-.detail-left {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+/* ── Left ── */
+.detail-left { display: flex; flex-direction: column; gap: 24px; }
 
 .detail-image {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
   aspect-ratio: 16/10;
-  background: var(--gray-light);
+  background: var(--cream);
+  box-shadow: var(--shadow-lg);
 }
 
 .detail-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
 }
+
+.detail-image:hover img { transform: scale(1.03); }
 
 .car-badge-lg {
   position: absolute;
   top: 16px;
   left: 16px;
-  background: var(--blue);
+  background: var(--black);
   color: var(--white);
-  font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: 6px 14px;
-  border-radius: 100px;
+  border-radius: 2px;
 }
 
 /* Tabs */
 .detail-tabs {
   display: flex;
-  gap: 4px;
-  background: var(--bg);
-  border: 1px solid var(--gray-light);
-  border-radius: var(--radius);
+  gap: 0;
+  background: var(--cream);
+  border: 1px solid var(--gray-lighter);
+  border-radius: var(--radius-sm);
   padding: 4px;
 }
 
@@ -96,25 +95,29 @@
   padding: 10px 16px;
   background: none;
   border: none;
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
   font-weight: 600;
-  color: var(--gray-dark);
-  border-radius: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray);
+  border-radius: var(--radius-sm);
   transition: all 0.2s;
   cursor: pointer;
 }
 
 .tab-btn.active {
   background: var(--white);
-  color: var(--blue);
-  box-shadow: var(--shadow);
+  color: var(--black);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Specs */
+.tab-btn:hover:not(.active) { color: var(--charcoal); }
+
+/* Specs table */
 .specs-grid {
   background: var(--white);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--gray-lighter);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -124,17 +127,18 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--gray-light);
+  border-bottom: 1px solid var(--gray-lighter);
+  transition: background 0.15s;
 }
 
-.spec-row:last-child {
-  border-bottom: none;
-}
+.spec-row:last-child { border-bottom: none; }
+.spec-row:hover { background: var(--cream); }
 
 .spec-label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--gray-dark);
+  letter-spacing: 0.02em;
 }
 
 .spec-value {
@@ -143,10 +147,10 @@
   color: var(--black);
 }
 
-/* Features */
+/* Features list */
 .features-list {
   background: var(--white);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--gray-lighter);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   list-style: none;
@@ -165,19 +169,20 @@
   gap: 8px;
 }
 
-/* ── Right Side ── */
+/* ── Right ── */
 .detail-right {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   position: sticky;
   top: 88px;
   height: fit-content;
 }
 
+/* Price summary card */
 .detail-summary {
   background: var(--white);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--gray-lighter);
   border-radius: var(--radius-lg);
   padding: 24px;
   display: flex;
@@ -186,19 +191,22 @@
 }
 
 .detail-summary h1 {
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
   font-size: 26px;
   font-weight: 700;
   color: var(--black);
   line-height: 1.2;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .detail-price {
-  font-family: var(--font-display);
-  font-size: 36px;
+  font-family: var(--font-serif);
+  font-size: 38px;
   font-weight: 700;
-  color: var(--blue);
+  color: var(--black);
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .detail-quick-specs {
@@ -208,93 +216,94 @@
 }
 
 .detail-quick-specs span {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--gray-dark);
-  background: var(--bg);
+  background: var(--cream);
   padding: 4px 10px;
-  border-radius: 100px;
+  border-radius: 2px;
 }
 
 /* Finance teaser */
 .finance-teaser {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
-  background: var(--blue-light);
-  border: 1px solid #bfdbfe;
+  background: var(--gold-pale);
+  border: 1px solid rgba(184,150,12,0.2);
   border-radius: var(--radius);
   padding: 16px;
 }
 
-.finance-teaser span {
-  font-size: 24px;
-  flex-shrink: 0;
-}
+.finance-teaser > span { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
 
 .finance-teaser strong {
+  font-family: var(--font-serif);
   font-size: 15px;
   font-weight: 700;
-  color: var(--blue-dark);
+  color: var(--black);
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
 }
 
 .finance-teaser p {
   font-size: 13px;
   color: var(--gray-dark);
-  margin: 0;
+  font-weight: 300;
+  line-height: 1.5;
 }
 
-/* Booking card */
+/* Booking / message cards */
 .booking-card {
   background: var(--white);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--gray-lighter);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px 22px 20px;
 }
 
 .booking-card h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
   font-size: 18px;
   font-weight: 700;
   color: var(--black);
-  margin: 0 0 20px 0;
+  margin: 0 0 18px 0;
+  letter-spacing: -0.02em;
 }
 
 .booking-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.form-field { display: flex; flex-direction: column; gap: 6px; }
 
 .form-field label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--charcoal);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-dark);
 }
 
 .form-field input,
 .form-field select {
   padding: 10px 12px;
-  border: 1.5px solid var(--gray-light);
-  border-radius: var(--radius);
-  font-family: var(--font-body);
+  border: 1px solid var(--gray-lighter);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
   font-size: 14px;
   color: var(--black);
-  background: var(--white);
-  transition: border-color 0.2s;
+  background: var(--cream);
+  transition: all 0.2s;
 }
 
 .form-field input:focus,
 .form-field select:focus {
   outline: none;
-  border-color: var(--blue);
+  border-color: var(--black);
+  background: var(--white);
 }
 
 .form-row {
@@ -313,66 +322,85 @@
 .booking-login-note button {
   background: none;
   border: none;
-  color: var(--blue);
+  color: var(--gold);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 1px;
 }
 
-.booking-login-note button:hover {
-  text-decoration: underline;
-}
-
+/* Primary action button inside booking card */
 .booking-submit {
+  width: 100%;
   padding: 13px;
-  background: var(--blue);
+  background: var(--black);
   color: var(--white);
-  border: none;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  transition: background 0.2s;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.25s;
   cursor: pointer;
 }
 
-.booking-submit:hover {
-  background: var(--blue-dark);
+.booking-submit:hover:not(:disabled) {
+  background: var(--gold);
+  border-color: var(--gold);
 }
 
+.booking-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Success state */
 .booking-success {
   display: flex;
   gap: 12px;
   align-items: flex-start;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: var(--radius);
-  padding: 16px;
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
 }
 
-.booking-success span {
-  font-size: 20px;
-}
+.booking-success > span { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
 .booking-success strong {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 700;
   color: #166534;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .booking-success p {
   font-size: 13px;
   color: #166534;
   margin: 0;
+  font-weight: 300;
+  line-height: 1.5;
 }
 
-/* Enquire box */
+/* Error state */
+.auth-error {
+  background: #fef2f2;
+  border-left: 3px solid var(--red);
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Enquire / AI box */
 .enquire-box {
   background: var(--white);
-  border: 1px solid var(--gray-light);
+  border: 1px solid var(--gray-lighter);
   border-radius: var(--radius-lg);
-  padding: 20px 24px;
+  padding: 18px 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -382,40 +410,22 @@
 .enquire-box p {
   font-size: 14px;
   color: var(--gray-dark);
-  margin: 0;
+  font-weight: 300;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* ── Responsive ── */
+@media (max-width: 960px) {
   .detail-layout {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
-  .detail-right {
-    position: static;
-  }
-  
-  .features-list {
-    grid-template-columns: 1fr;
-  }
+  .detail-right { position: static; }
+  .features-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
-  .detail-summary h1 {
-    font-size: 22px;
-  }
-  
-  .detail-price {
-    font-size: 28px;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .booking-card {
-    padding: 20px;
-  }
+  .detail-summary h1 { font-size: 22px; }
+  .detail-price      { font-size: 30px; }
+  .form-row          { grid-template-columns: 1fr; }
+  .booking-card      { padding: 18px; }
 }

@@ -9,6 +9,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
   const [users, setUsers] = useState([]);
   const [cars, setCars] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [testDrives, setTestDrives] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,14 +18,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
-  console.log('AdminDashboard - User:', user);
-  console.log('AdminDashboard - Token:', token);
-  console.log('AdminDashboard - isAdmin:', isAdmin);
-  console.log('AdminDashboard - isSuperAdmin:', isSuperAdmin);
-
   useEffect(() => {
     if (!user || !isAdmin) {
-      console.log('Not admin, redirecting to dashboard');
       onNavigate('dashboard');
     }
   }, [user, isAdmin, onNavigate]);
@@ -40,14 +35,11 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     setError('');
     
     try {
-      console.log('Fetching data for tab:', activeTab);
-      
       if (activeTab === 'dashboard') {
         const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        console.log('Stats response:', data);
         if (data.success) {
           setStats(data);
         } else {
@@ -58,7 +50,6 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        console.log('Users response:', data);
         if (data.success) {
           setUsers(data.users);
         } else {
@@ -69,7 +60,6 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        console.log('Cars response:', data);
         if (data.success) {
           setCars(data.cars);
         } else {
@@ -80,11 +70,20 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        console.log('Messages response:', data);
         if (data.success) {
           setMessages(data.messages);
         } else {
           setError(data.message || 'Failed to load messages');
+        }
+      } else if (activeTab === 'testdrives') {
+        const response = await fetch(`${API_BASE_URL}/api/test-drives/all`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setTestDrives(data.appointments);
+        } else {
+          setError(data.message || 'Failed to load test drives');
         }
       }
     } catch (err) {
@@ -164,6 +163,29 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     }
   };
 
+  const updateInspectionStatus = async (carId, status) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/cars/admin/cars/${carId}/inspection`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ inspectionStatus: status })
+      });
+      const data = await response.json();
+      if (data.success) {
+        fetchData();
+        alert(`Inspection status updated to ${status}`);
+      } else {
+        alert(data.message || 'Failed to update inspection status');
+      }
+    } catch (err) {
+      console.error('Error updating inspection:', err);
+      alert('Network error. Please try again.');
+    }
+  };
+
   const deleteCar = async (carId, carName) => {
     if (!confirm(`Are you sure you want to delete "${carName}"?`)) {
       return;
@@ -187,12 +209,32 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     }
   };
 
+  const updateTestDriveStatus = async (appointmentId, action) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/test-drives/${appointmentId}/${action}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        fetchData();
+        alert(`Test drive ${action}d successfully`);
+      } else {
+        alert(data.message || `Failed to ${action} test drive`);
+      }
+    } catch (err) {
+      console.error('Error updating test drive:', err);
+      alert('Network error. Please try again.');
+    }
+  };
+
   const renderDashboard = () => {
     if (!stats) return <div className="admin-loading">No data available</div>;
     
-    // Calculate marketplace vs dealership counts
     const marketplaceCars = cars.filter(c => c.carSource === 'MARKETPLACE').length;
     const dealershipCars = cars.filter(c => c.carSource === 'DEALERSHIP').length;
+    const pendingInspections = cars.filter(c => c.carSource === 'DEALERSHIP' && c.inspectionStatus === 'PENDING').length;
+    const pendingTestDrives = testDrives.filter(td => td.status === 'SCHEDULED').length;
     
     return (
       <div className="admin-stats-grid">
@@ -220,6 +262,28 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               <span>🚗 Dealership: {dealershipCars}</span>
               <span>✅ Available: {stats.availableCars || 0}</span>
               <span>💰 Sold: {stats.soldCars || 0}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-icon">🔍</div>
+          <div className="stat-info">
+            <h3>Pending Inspections</h3>
+            <p className="stat-number">{pendingInspections}</p>
+            <div className="stat-breakdown">
+              <span>Need review</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-icon">🚗</div>
+          <div className="stat-info">
+            <h3>Pending Test Drives</h3>
+            <p className="stat-number">{pendingTestDrives}</p>
+            <div className="stat-breakdown">
+              <span>Awaiting approval</span>
             </div>
           </div>
         </div>
@@ -285,10 +349,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           {users.length > 0 ? users.map(userItem => (
             <tr key={userItem.id}>
               <td>{userItem.id}</td>
-              <td>
-                <strong>{userItem.username}</strong>
-                {userItem.isEmployee && <div className="employee-badge-small">🏢</div>}
-              </td>
+              <td><strong>{userItem.username}</strong></td>
               <td>{userItem.email}</td>
               <td>
                 {isSuperAdmin ? (
@@ -358,6 +419,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             <th>Seller</th>
             <th>Status</th>
             <th>Inspection</th>
+            <th>Inspection Actions</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -401,6 +463,31 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 {car.carSource !== 'DEALERSHIP' && <span>—</span>}
               </td>
               <td>
+                {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PENDING' && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => updateInspectionStatus(car.id, 'PASSED')}
+                      className="approve-inspection-btn"
+                    >
+                      ✅ Pass
+                    </button>
+                    <button 
+                      onClick={() => updateInspectionStatus(car.id, 'FAILED')}
+                      className="reject-inspection-btn"
+                    >
+                      ❌ Fail
+                    </button>
+                  </div>
+                )}
+                {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
+                  <span style={{ color: '#10b981' }}>✓ Approved</span>
+                )}
+                {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'FAILED' && (
+                  <span style={{ color: '#ef4444' }}>✗ Failed</span>
+                )}
+                {car.carSource !== 'DEALERSHIP' && <span>—</span>}
+              </td>
+              <td>
                 <button 
                   className="delete-btn"
                   onClick={() => deleteCar(car.id, `${car.make} ${car.model}`)}
@@ -411,7 +498,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             </tr>
           )) : (
             <tr>
-              <td colSpan="9" style={{ textAlign: 'center' }}>No cars found</td>
+              <td colSpan="10" style={{ textAlign: 'center' }}>No cars found</td>
             </tr>
           )}
         </tbody>
@@ -464,6 +551,78 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     </div>
   );
 
+  const renderTestDrives = () => (
+    <div className="admin-table-container">
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Car</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {testDrives.length > 0 ? testDrives.map(td => (
+            <tr key={td.id}>
+              <td>{td.id}</td>
+              <td><strong>{td.userName}</strong></td>
+              <td>{td.userEmail}</td>
+              <td>{td.carName || 'N/A'}</td>
+              <td>{new Date(td.appointmentDate).toLocaleString()}</td>
+              <td>
+                <span className={`test-drive-status ${td.status?.toLowerCase()}`}>
+                  {td.status}
+                </span>
+              </td>
+              <td className="notes-preview">{td.notes?.substring(0, 50)}...</td>
+              <td>
+                {td.status === 'SCHEDULED' && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={() => updateTestDriveStatus(td.id, 'approve')}
+                      className="approve-btn"
+                    >
+                      ✅ Approve
+                    </button>
+                    <button 
+                      onClick={() => updateTestDriveStatus(td.id, 'cancel')}
+                      className="cancel-btn"
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                )}
+                {td.status === 'CONFIRMED' && (
+                  <button 
+                    onClick={() => updateTestDriveStatus(td.id, 'complete')}
+                    className="complete-btn"
+                  >
+                    ✓ Mark Completed
+                  </button>
+                )}
+                {td.status === 'COMPLETED' && (
+                  <span style={{ color: '#10b981' }}>✓ Done</span>
+                )}
+                {td.status === 'CANCELLED' && (
+                  <span style={{ color: '#ef4444' }}>✗ Cancelled</span>
+                )}
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colSpan="8" style={{ textAlign: 'center' }}>No test drives found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   if (!user || !isAdmin) {
     return null;
   }
@@ -505,6 +664,12 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             🚗 Cars
           </button>
           <button 
+            className={`admin-nav-link ${activeTab === 'testdrives' ? 'active' : ''}`}
+            onClick={() => setActiveTab('testdrives')}
+          >
+            🚗 Test Drives
+          </button>
+          <button 
             className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
             onClick={() => setActiveTab('messages')}
           >
@@ -534,6 +699,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'users' && renderUsers()}
             {activeTab === 'cars' && renderCars()}
+            {activeTab === 'testdrives' && renderTestDrives()}
             {activeTab === 'messages' && renderMessages()}
           </>
         )}
