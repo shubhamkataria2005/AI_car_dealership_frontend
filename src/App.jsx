@@ -8,6 +8,7 @@ import CarDetailPage from './pages/carDetailPage/CarDeatilPage.jsx';
 import DashboardPage from './pages/dashboardPage/DashboardPage.jsx';
 import LoginPage from './pages/loginPage/LoginPage.jsx';
 import RegisterPage from './pages/registerPage/RegisterPage.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';  // ADD THIS IMPORT
 import './App.css';
 
 function App() {
@@ -85,6 +86,8 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
       onNavigate('car-detail');
     } else if (path === '/dashboard' && currentPage !== 'dashboard') {
       onNavigate('dashboard');
+    } else if (path === '/admin' && currentPage !== 'admin') {  // ADD THIS
+      onNavigate('admin');
     } else if (path === '/login' && currentPage !== 'login') {
       onNavigate('login');
     } else if (path === '/register' && currentPage !== 'register') {
@@ -110,6 +113,9 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
       case 'dashboard':
         if (location.pathname !== '/dashboard') navigate('/dashboard');
         break;
+      case 'admin':  // ADD THIS CASE
+        if (location.pathname !== '/admin') navigate('/admin');
+        break;
       case 'login':
         if (location.pathname !== '/login') navigate('/login');
         break;
@@ -126,8 +132,8 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
     onNavigate(page, data);
   };
 
-  // Protect dashboard route
-  if (currentPage === 'dashboard' && !user) {
+  // Protect dashboard and admin routes
+  if ((currentPage === 'dashboard' || currentPage === 'admin') && !user) {
     console.log('Protected route: redirecting to login');
     setTimeout(() => handleNavigateWrapper('login'), 0);
     return null;
@@ -161,6 +167,20 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
             element={
               user ? 
                 <DashboardPage 
+                  user={user} 
+                  sessionToken={sessionToken}
+                  onLogout={onLogout} 
+                  onNavigate={handleNavigateWrapper} 
+                /> : 
+                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
+            } 
+          />
+          {/* ADD ADMIN ROUTE */}
+          <Route 
+            path="/admin" 
+            element={
+              user ? 
+                <AdminDashboard 
                   user={user} 
                   sessionToken={sessionToken}
                   onLogout={onLogout} 
