@@ -31,7 +31,7 @@ const Footer = ({ onNavigate }) => {
           <h4>Contact</h4>
           <p>📍 Auckland, New Zealand</p>
           <p>📞 +64 220 632 005</p>
-          <p>✉️ hello@shubhamscars.co.nz</p>
+          <p>✉️ shubham3510@cars.co.nz</p>
           <p>⏰ Mon–Sat, 9am–6pm</p>
         </div>
 

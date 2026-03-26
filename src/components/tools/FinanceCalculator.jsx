@@ -46,11 +46,11 @@ const FinanceCalculator = () => {
             <label>Car Price: ${values.carPrice.toLocaleString()}</label>
             <input
               type="range"
-              min="5000" max="100000" step="500"
+              min="5000" max="1000000" step="500"
               value={values.carPrice}
               onChange={e => set('carPrice', e.target.value)}
             />
-            <div className="range-labels"><span>$5,000</span><span>$100,000</span></div>
+            <div className="range-labels"><span>$5,000</span><span>$1000,000</span></div>
           </div>
 
           <div className="form-field">
@@ -72,7 +72,6 @@ const FinanceCalculator = () => {
               <option value="36">36 months (3 years)</option>
               <option value="48">48 months (4 years)</option>
               <option value="60">60 months (5 years)</option>
-              <option value="72">72 months (6 years)</option>
             </select>
           </div>
 

@@ -101,6 +101,23 @@ const HomePage = ({ onNavigate }) => {
       <section className="search-section">
         <div className="container">
           <div className="search-bar-home">
+            {/* NEW: Keyword Search */}
+            <div className="search-field">
+              <label>🔍 Search ANY Car</label>
+              <input 
+                type="text" 
+                id="search-keyword"
+                placeholder="Search any make, model, year, or keyword..."
+                style={{ 
+                  padding: '11px 14px', 
+                  border: '1px solid var(--gray-lighter)', 
+                  borderRadius: 'var(--radius-sm)', 
+                  fontSize: '14px',
+                  width: '100%',
+                  background: 'var(--white)'
+                }}
+              />
+            </div>
             <div className="search-field">
               <label>Make</label>
               <select id="search-make">
@@ -108,6 +125,7 @@ const HomePage = ({ onNavigate }) => {
                 <option>Toyota</option><option>Honda</option>
                 <option>Mazda</option><option>Subaru</option>
                 <option>Nissan</option><option>Ford</option>
+                <option>BMW</option><option>Mercedes</option><option>Audi</option>
               </select>
             </div>
             <div className="search-field">
@@ -118,6 +136,7 @@ const HomePage = ({ onNavigate }) => {
                 <option value="25000">Under $25,000</option>
                 <option value="40000">Under $40,000</option>
                 <option value="60000">Under $60,000</option>
+                <option value="100000">Under $100,000</option>
               </select>
             </div>
             <div className="search-field">
@@ -126,13 +145,16 @@ const HomePage = ({ onNavigate }) => {
                 <option value="">Any type</option>
                 <option>Sedan</option><option>SUV</option>
                 <option>Hatchback</option><option>Ute</option><option>Wagon</option>
+                <option>Coupe</option><option>Convertible</option>
               </select>
             </div>
             <button className="search-btn" onClick={() => {
+              const keyword = document.getElementById('search-keyword')?.value || '';
               const make = document.getElementById('search-make').value;
               const maxPrice = document.getElementById('search-price').value;
               const bodyType = document.getElementById('search-body').value;
               const params = { source: activePlatform };
+              if (keyword) params.keyword = keyword;
               if (make) params.make = make;
               if (maxPrice) params.maxPrice = maxPrice;
               if (bodyType) params.bodyType = bodyType;

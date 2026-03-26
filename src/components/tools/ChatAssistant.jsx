@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../config';
 
 const ChatAssistant = ({ user, sessionToken }) => {
   const [messages, setMessages] = useState([
-    { text: `Hi ${user?.username}! 👋 I'm your AI car assistant. Ask me anything about our cars, financing, or the buying process!`, sender: 'bot' }
+    { text: `Hi ${user?.username || 'there'}! 👋 I'm your AI car assistant. Ask me anything about cars, financing, or the buying process!`, sender: 'bot' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,37 +23,45 @@ const ChatAssistant = ({ user, sessionToken }) => {
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
+    
     const userMessage = { text: inputText, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
+      const response = await fetch(`${API_BASE_URL}/api/ai-assistant/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': sessionToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: inputText })
       });
+      
       const data = await response.json();
-      setMessages(prev => [...prev, {
-        text: data.error ? 'Authentication error. Please login again.' : data.response,
-        sender: 'bot'
-      }]);
-    } catch {
-      setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting. Please try again.", sender: 'bot' }]);
+      
+      if (data.success) {
+        setMessages(prev => [...prev, { text: data.response, sender: 'bot' }]);
+      } else {
+        setMessages(prev => [...prev, { text: "Sorry, I'm having trouble. Please try again.", sender: 'bot' }]);
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { text: "Network error. Please try again.", sender: 'bot' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
     <div className="tool-panel">
       <div className="tool-header">
         <h2>💬 AI Car Assistant</h2>
-        <p>Ask anything about our inventory, pricing, or buying process</p>
+        <p>Ask anything about our cars, financing, or buying process. Powered by OpenAI.</p>
       </div>
 
       <div className="quick-chips">
@@ -83,7 +91,7 @@ const ChatAssistant = ({ user, sessionToken }) => {
           value={inputText}
           onChange={e => setInputText(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Ask about a car, price, or test drive..."
+          placeholder="Ask about a car, price, test drive..."
           rows={2}
           disabled={isLoading}
         />

@@ -7,12 +7,13 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ 
+    keyword: '',  // NEW: Keyword search
     make: 'All', 
     body: 'All', 
     fuel: 'All', 
     maxPrice: 100000, 
     sortBy: 'newest',
-    source: 'All' // NEW: Source filter for marketplace/dealership
+    source: 'All'
   });
   const [search, setSearch] = useState('');
 
@@ -27,6 +28,10 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         } else if (locationFilters.filters.source === 'dealership') {
           newFilters.source = 'Dealership';
         }
+      }
+      // Handle keyword from search
+      if (locationFilters.filters.keyword) {
+        newFilters.keyword = locationFilters.filters.keyword;
       }
       setFilters(newFilters);
     }
@@ -44,7 +49,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       .catch(() => setLoading(false));
   }, []);
 
-  const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi'];
+  const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Hyundai', 'Kia', 'Volkswagen'];
   const BODIES = ['All', 'Sedan', 'SUV', 'Hatchback', 'Ute', 'Wagon', 'Coupe', 'Convertible'];
   const FUELS = ['All', 'Petrol', 'Diesel', 'Hybrid', 'Electric'];
   const SOURCES = ['All', 'Marketplace', 'Dealership'];
@@ -53,6 +58,17 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
   const filtered = cars
     .filter(car => {
+      // NEW: Keyword search - searches make, model, year, description
+      if (filters.keyword) {
+        const searchLower = filters.keyword.toLowerCase();
+        const matchesSearch = 
+          car.make?.toLowerCase().includes(searchLower) ||
+          car.model?.toLowerCase().includes(searchLower) ||
+          car.year?.toString().includes(searchLower) ||
+          (car.description && car.description.toLowerCase().includes(searchLower));
+        if (!matchesSearch) return false;
+      }
+      
       // Make filter
       if (filters.make !== 'All' && car.make !== filters.make) return false;
       
@@ -65,10 +81,10 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       // Price filter
       if (car.price > filters.maxPrice) return false;
       
-      // Search filter
+      // Legacy search filter (make, model, year)
       if (search && !`${car.make} ${car.model} ${car.year}`.toLowerCase().includes(search.toLowerCase())) return false;
       
-      // Source filter - NEW
+      // Source filter
       if (filters.source !== 'All') {
         const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
         if (car.carSource !== expectedSource) return false;
@@ -112,6 +128,26 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         <aside className="filters-sidebar">
           <h3>Filter Cars</h3>
 
+          {/* NEW: Keyword Search - Search ANY car */}
+          <div className="filter-group">
+            <label>🔍 Search ANY Car</label>
+            <input 
+              type="text" 
+              placeholder="Search any make, model, year, or keyword..."
+              value={filters.keyword}
+              onChange={e => setFilter('keyword', e.target.value)}
+              style={{ 
+                width: '100%', 
+                padding: '10px 14px', 
+                border: '1px solid var(--gray-lighter)', 
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '14px',
+                background: 'var(--cream)'
+              }}
+            />
+          </div>
+
+          {/* Existing Search */}
           <div className="filter-group">
             <label>Search</label>
             <input 
@@ -122,7 +158,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             />
           </div>
 
-          {/* NEW: Source Filter */}
+          {/* Source Filter */}
           <div className="filter-group">
             <label>Car Source</label>
             <div className="filter-chips">
@@ -204,6 +240,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             className="reset-filters" 
             onClick={() => { 
               setFilters({ 
+                keyword: '',
                 make: 'All', 
                 body: 'All', 
                 fuel: 'All', 
@@ -220,7 +257,10 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
         <div className="inventory-main">
           <div className="inventory-toolbar">
-            <span className="results-count">{filtered.length} results</span>
+            <span className="results-count">
+              {filtered.length} results
+              {filters.keyword && ` for "${filters.keyword}"`}
+            </span>
             <select 
               value={filters.sortBy} 
               onChange={e => setFilter('sortBy', e.target.value)} 
@@ -237,13 +277,17 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             <div className="no-results">Loading cars...</div>
           ) : filtered.length === 0 ? (
             <div className="no-results">
-              <span>🚗</span>
-              <h3>No cars match your filters</h3>
-              <p>Try adjusting your search criteria</p>
+              <span>🔍</span>
+              <h3>No cars match your search</h3>
+              <p>Try different keywords or adjust your filters</p>
+              <p style={{ fontSize: '13px', color: 'var(--gold)', marginTop: '8px' }}>
+                Popular searches: SUV, Toyota, Electric, under $30k
+              </p>
               <button 
                 className="reset-filters" 
                 onClick={() => { 
                   setFilters({ 
+                    keyword: '',
                     make: 'All', 
                     body: 'All', 
                     fuel: 'All', 

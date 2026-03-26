@@ -465,3 +465,105 @@
     font-size: 9px;
   }
 }
+/* Add to src/pages/inventory/InventoryPage.css if missing */
+
+/* Inventory Stats Section */
+.inventory-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.inventory-source-badges {
+  display: flex;
+  gap: 12px;
+}
+
+.source-badge-small {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.source-badge-small.marketplace {
+  background: var(--gray-light);
+  color: var(--gray-dark);
+}
+
+.source-badge-small.dealership {
+  background: var(--gold-pale);
+  color: var(--gold);
+}
+
+/* Source Badge on Cards */
+.source-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.source-badge.dealership {
+  background: var(--gold);
+  color: var(--white);
+}
+
+.source-badge.marketplace {
+  background: var(--gray-dark);
+  color: var(--white);
+}
+
+/* Inspection Badge */
+.inspection-badge {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--green);
+  color: var(--white);
+  z-index: 2;
+}
+
+/* Stock Number */
+.car-card-stock {
+  font-size: 11px;
+  color: var(--gray);
+  padding-top: 4px;
+  border-top: 1px solid var(--gray-lighter);
+  margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .inventory-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .inventory-stats {
+    align-items: flex-start;
+  }
+  
+  .source-badge {
+    top: 8px;
+    right: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+  
+  .inspection-badge {
+    bottom: 8px;
+    right: 8px;
+    padding: 3px 8px;
+    font-size: 9px;
+  }
+}
