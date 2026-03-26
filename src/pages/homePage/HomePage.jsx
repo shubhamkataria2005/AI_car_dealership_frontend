@@ -1,3 +1,4 @@
+// src/pages/homePage/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import './HomePage.css';
 import { api } from '../../services/api';
@@ -5,12 +6,13 @@ import { api } from '../../services/api';
 const HomePage = ({ onNavigate }) => {
   const [featuredCars, setFeaturedCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activePlatform, setActivePlatform] = useState('both');
 
   useEffect(() => {
     api.getAllCars()
       .then(data => {
         if (data.success) {
-          setFeaturedCars(data.cars.slice(0, 3));
+          setFeaturedCars(data.cars.slice(0, 6));
         }
         setLoading(false);
       })
@@ -19,14 +21,20 @@ const HomePage = ({ onNavigate }) => {
       });
   }, []);
 
+  const displayedCars = featuredCars.filter(car => {
+    if (activePlatform === 'marketplace') return car.carSource === 'MARKETPLACE';
+    if (activePlatform === 'dealership') return car.carSource === 'DEALERSHIP';
+    return true;
+  });
+
   return (
     <div className="home-page page">
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-content">
-            <span className="hero-eyebrow">Auckland's trusted used car dealer</span>
-            <h1>Find Your<br /><em>Perfect</em><br />Used Car</h1>
-            <p>Hundreds of quality vehicles, honestly priced. No pressure. No hidden fees. Just great cars.</p>
+            <span className="hero-eyebrow">Auckland's trusted car platform</span>
+            <h1>Find Your<br /><em>Perfect</em><br />Car</h1>
+            <p>Choose from private sellers on our marketplace or professionally inspected dealership cars.</p>
             <div className="hero-actions">
               <button className="btn-primary" onClick={() => onNavigate('inventory')}>
                 Browse All Cars
@@ -39,7 +47,7 @@ const HomePage = ({ onNavigate }) => {
             <div className="hero-stats">
               <div className="hero-stat">
                 <strong>{loading ? '...' : featuredCars.length}+</strong>
-                <span>Cars in stock</span>
+                <span>Cars available</span>
               </div>
               <div className="hero-stat">
                 <strong>5★</strong>
@@ -60,6 +68,32 @@ const HomePage = ({ onNavigate }) => {
               <strong>{loading ? '...' : featuredCars.length}+</strong>
               <span>Vehicles available now</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Selector */}
+      <section className="platform-selector-section">
+        <div className="container">
+          <div className="platform-tabs">
+            <button 
+              className={`platform-tab ${activePlatform === 'both' ? 'active' : ''}`}
+              onClick={() => setActivePlatform('both')}
+            >
+              All Cars
+            </button>
+            <button 
+              className={`platform-tab ${activePlatform === 'marketplace' ? 'active' : ''}`}
+              onClick={() => setActivePlatform('marketplace')}
+            >
+              🏪 Marketplace (Private Sellers)
+            </button>
+            <button 
+              className={`platform-tab ${activePlatform === 'dealership' ? 'active' : ''}`}
+              onClick={() => setActivePlatform('dealership')}
+            >
+              🚗 Dealership (Company Cars)
+            </button>
           </div>
         </div>
       </section>
@@ -98,7 +132,7 @@ const HomePage = ({ onNavigate }) => {
               const make = document.getElementById('search-make').value;
               const maxPrice = document.getElementById('search-price').value;
               const bodyType = document.getElementById('search-body').value;
-              const params = {};
+              const params = { source: activePlatform };
               if (make) params.make = make;
               if (maxPrice) params.maxPrice = maxPrice;
               if (bodyType) params.bodyType = bodyType;
@@ -114,8 +148,8 @@ const HomePage = ({ onNavigate }) => {
         <div className="container">
           <div className="section-header">
             <div>
-              <div className="section-label">Hand-picked</div>
-              <h2>Featured Vehicles</h2>
+              <div className="section-label">Featured</div>
+              <h2>{activePlatform === 'both' ? 'Latest Vehicles' : activePlatform === 'marketplace' ? 'Marketplace Listings' : 'Dealership Inventory'}</h2>
             </div>
             <button className="view-all-btn" onClick={() => onNavigate('inventory')}>
               View all vehicles
@@ -125,15 +159,21 @@ const HomePage = ({ onNavigate }) => {
           <div className="cars-grid">
             {loading ? (
               <div>Loading cars...</div>
-            ) : featuredCars.length === 0 ? (
-              <div>No cars available yet. Be the first to list one!</div>
+            ) : displayedCars.length === 0 ? (
+              <div>No cars available in this category.</div>
             ) : (
-              featuredCars.map(car => (
+              displayedCars.map(car => (
                 <div key={car.id} className="car-card" onClick={() => onNavigate('car-detail', car)}>
                   <div className="car-card-image">
                     <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'} 
                          alt={`${car.year} ${car.make} ${car.model}`} />
                     <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
+                    {car.carSource === 'DEALERSHIP' && (
+                      <span className="source-badge dealership">🏢 Dealership</span>
+                    )}
+                    {car.carSource === 'MARKETPLACE' && (
+                      <span className="source-badge marketplace">👤 Private Seller</span>
+                    )}
                   </div>
                   <div className="car-card-body">
                     <div className="car-card-title">
@@ -160,22 +200,32 @@ const HomePage = ({ onNavigate }) => {
       <section className="why-us">
         <div className="container">
           <div className="why-us-header">
-            <div className="section-label" style={{ color: 'var(--gold)' }}>Our promise</div>
-            <h2>Why Choose Us?</h2>
+            <div className="section-label" style={{ color: 'var(--gold)' }}>Two ways to buy</div>
+            <h2>Choose Your Experience</h2>
           </div>
-          <div className="why-grid">
-            {[
-              { n: '150+', icon: '🔍', title: 'Point Inspection', desc: 'Every vehicle is thoroughly checked before it reaches you.' },
-              { n: '$0', icon: '💰', title: 'Hidden Fees', desc: 'The price you see is exactly the price you pay. Always.' },
-              { n: '100%', icon: '🤖', title: 'AI-Powered', desc: 'Our AI tools help you research, compare, and decide smarter.' },
-              { n: 'Full', icon: '📋', title: 'History Reports', desc: 'Complete service and ownership records for every car.' },
-            ].map(item => (
-              <div key={item.title} className="why-card">
-                <span className="why-number">{item.n}</span>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </div>
-            ))}
+          <div className="why-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="why-card">
+              <span className="why-number">🏪</span>
+              <h3>Marketplace</h3>
+              <p>Buy directly from private sellers. Find great deals and negotiate your own price. Like TradeMe but specialized for cars.</p>
+              <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
+                <li>✓ Direct seller communication</li>
+                <li>✓ Negotiate your price</li>
+                <li>✓ List your own car</li>
+                <li>✓ AI-powered price suggestions</li>
+              </ul>
+            </div>
+            <div className="why-card">
+              <span className="why-number">🚗</span>
+              <h3>Dealership</h3>
+              <p>Buy from our professionally inspected, company-owned inventory with full support and service options.</p>
+              <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
+                <li>✓ 150+ point inspection</li>
+                <li>✓ Test drives available</li>
+                <li>✓ Service center access</li>
+                <li>✓ Warranty options</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>

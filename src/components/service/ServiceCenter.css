@@ -1,0 +1,220 @@
+/* src/components/service/ServiceCenter.css */
+.service-center {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.service-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.service-header h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.service-header p {
+  font-size: 14px;
+  color: var(--gray-dark);
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+
+.service-card {
+  padding: 20px;
+  background: var(--cream);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-lighter);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.service-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.service-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--black);
+}
+
+.service-card p {
+  font-size: 13px;
+  color: var(--gray-dark);
+  margin: 0;
+}
+
+.booking-section {
+  background: var(--white);
+  border: 1px solid var(--gray-lighter);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: 0 24px 24px 24px;
+}
+
+.booking-section h3 {
+  margin-bottom: 20px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-light);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.booking-form input:focus,
+.booking-form select:focus,
+.booking-form textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.book-btn {
+  padding: 12px;
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.book-btn:hover:not(:disabled) {
+  background: var(--blue-dark);
+}
+
+.book-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.booking-message {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+}
+
+.booking-message.success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.booking-message.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.appointments-section {
+  padding: 0 24px 24px 24px;
+}
+
+.appointments-section h3 {
+  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appointment-card {
+  padding: 16px;
+  background: var(--cream);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-lighter);
+}
+
+.appointment-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.appointment-details strong {
+  display: block;
+  font-size: 14px;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.appointment-details span {
+  font-size: 13px;
+  color: var(--gray-dark);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.appointment-details p {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-lighter);
+}
+
+@media (max-width: 768px) {
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .booking-section {
+    margin: 0 12px 24px 12px;
+    padding: 20px;
+  }
+  
+  .appointments-section {
+    padding: 0 12px 24px 12px;
+  }
+}

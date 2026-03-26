@@ -400,3 +400,137 @@
     max-width: 150px;
   }
 }
+/* Add to src/pages/admin/AdminDashboard.css */
+
+/* Source Badge for Table */
+.source-badge-table {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.source-badge-table.marketplace {
+  background: var(--gray-light);
+  color: var(--gray-dark);
+}
+
+.source-badge-table.dealership {
+  background: var(--gold-pale);
+  color: var(--gold);
+}
+
+/* Employee Badge */
+.employee-badge {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  background: #d1fae5;
+  color: #065f46;
+  display: inline-block;
+}
+
+.regular-user-badge {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #3730a3;
+  display: inline-block;
+}
+
+/* Inspection Status */
+.inspection-status {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.inspection-status.passed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.inspection-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.inspection-status.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Stock Number Small */
+.stock-number-small {
+  font-size: 10px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+
+/* User ID Small */
+.user-id-small {
+  font-size: 10px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+
+/* Role Badge for Sales Employee */
+.role-sales_employee {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Update existing role badges */
+.role-user {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.role-admin {
+  background: #fed7aa;
+  color: #9b2c1d;
+}
+
+.role-super_admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Status Select Styles */
+.status-select.status-available {
+  border-left: 3px solid #065f46;
+}
+
+.status-select.status-sold {
+  border-left: 3px solid #991b1b;
+}
+
+.status-select.status-pending {
+  border-left: 3px solid #92400e;
+}
+
+.status-select.status-rejected {
+  border-left: 3px solid #991b1b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .source-badge-table,
+  .employee-badge,
+  .regular-user-badge,
+  .inspection-status {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  
+  .stock-number-small,
+  .user-id-small {
+    font-size: 8px;
+  }
+}
