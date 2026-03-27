@@ -10,6 +10,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
   const [cars, setCars] = useState([]);
   const [messages, setMessages] = useState([]);
   const [testDrives, setTestDrives] = useState([]);
+  const [tradeIns, setTradeIns] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -84,6 +85,16 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           setTestDrives(data.appointments);
         } else {
           setError(data.message || 'Failed to load test drives');
+        }
+      } else if (activeTab === 'tradeins') {
+        const response = await fetch(`${API_BASE_URL}/api/trade-in/admin/pending`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setTradeIns(data.tradeIns);
+        } else {
+          setError(data.message || 'Failed to load trade-ins');
         }
       }
     } catch (err) {
@@ -165,7 +176,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
 
   const updateInspectionStatus = async (carId, status) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/cars/admin/cars/${carId}/inspection`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/cars/${carId}/inspection`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -228,6 +239,29 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     }
   };
 
+  const updateTradeInStatus = async (tradeInId, action, value) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/trade-in/admin/${tradeInId}/${action}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(action === 'approve' ? { finalValue: value } : { reason: value })
+      });
+      const data = await response.json();
+      if (data.success) {
+        fetchData();
+        alert(`Trade-in ${action}d successfully`);
+      } else {
+        alert(data.message || `Failed to ${action} trade-in`);
+      }
+    } catch (err) {
+      console.error('Error updating trade-in:', err);
+      alert('Network error. Please try again.');
+    }
+  };
+
   const renderDashboard = () => {
     if (!stats) return <div className="admin-loading">No data available</div>;
     
@@ -235,6 +269,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     const dealershipCars = cars.filter(c => c.carSource === 'DEALERSHIP').length;
     const pendingInspections = cars.filter(c => c.carSource === 'DEALERSHIP' && c.inspectionStatus === 'PENDING').length;
     const pendingTestDrives = testDrives.filter(td => td.status === 'SCHEDULED').length;
+    const pendingTradeIns = tradeIns.filter(ti => ti.status === 'PENDING').length;
     
     return (
       <div className="admin-stats-grid">
@@ -271,9 +306,6 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           <div className="stat-info">
             <h3>Pending Inspections</h3>
             <p className="stat-number">{pendingInspections}</p>
-            <div className="stat-breakdown">
-              <span>Need review</span>
-            </div>
           </div>
         </div>
         
@@ -282,9 +314,14 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
           <div className="stat-info">
             <h3>Pending Test Drives</h3>
             <p className="stat-number">{pendingTestDrives}</p>
-            <div className="stat-breakdown">
-              <span>Awaiting approval</span>
-            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-icon">🔄</div>
+          <div className="stat-info">
+            <h3>Pending Trade-Ins</h3>
+            <p className="stat-number">{pendingTradeIns}</p>
           </div>
         </div>
         
@@ -623,6 +660,82 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     </div>
   );
 
+  const renderTradeIns = () => (
+    <div className="admin-table-container">
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer ID</th>
+            <th>Trade Car</th>
+            <th>Year</th>
+            <th>Mileage</th>
+            <th>Condition</th>
+            <th>Est. Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tradeIns.length > 0 ? tradeIns.map(ti => (
+            <tr key={ti.id}>
+              <td>{ti.id}</td>
+              <td>{ti.userId}</td>
+              <td>{ti.tradeMake} {ti.tradeModel}</td>
+              <td>{ti.tradeYear}</td>
+              <td>{ti.tradeMileage?.toLocaleString()} km</td>
+              <td>{ti.tradeCondition}</td>
+              <td>${ti.estimatedValue?.toLocaleString()}</td>
+              <td>
+                <span className={`status-badge status-${ti.status?.toLowerCase()}`}>
+                  {ti.status}
+                </span>
+              </td>
+              <td>
+                {ti.status === 'PENDING' && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => {
+                        const finalValue = prompt('Enter final trade-in value:', ti.estimatedValue);
+                        if (finalValue) {
+                          updateTradeInStatus(ti.id, 'approve', finalValue);
+                        }
+                      }}
+                      className="approve-btn"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const reason = prompt('Enter rejection reason:');
+                        if (reason) {
+                          updateTradeInStatus(ti.id, 'reject', reason);
+                        }
+                      }}
+                      className="cancel-btn"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {ti.status === 'APPROVED' && (
+                  <span style={{ color: '#10b981' }}>✓ Approved</span>
+                )}
+                {ti.status === 'REJECTED' && (
+                  <span style={{ color: '#ef4444' }}>✗ Rejected</span>
+                )}
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colSpan="9" style={{ textAlign: 'center' }}>No trade-ins found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   if (!user || !isAdmin) {
     return null;
   }
@@ -670,6 +783,12 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             🚗 Test Drives
           </button>
           <button 
+            className={`admin-nav-link ${activeTab === 'tradeins' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tradeins')}
+          >
+            🔄 Trade-Ins
+          </button>
+          <button 
             className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
             onClick={() => setActiveTab('messages')}
           >
@@ -700,6 +819,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             {activeTab === 'users' && renderUsers()}
             {activeTab === 'cars' && renderCars()}
             {activeTab === 'testdrives' && renderTestDrives()}
+            {activeTab === 'tradeins' && renderTradeIns()}
             {activeTab === 'messages' && renderMessages()}
           </>
         )}
