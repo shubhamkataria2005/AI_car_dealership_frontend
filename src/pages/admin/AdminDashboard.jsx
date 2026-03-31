@@ -274,35 +274,35 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     return (
       <div className="admin-stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Total Users</h3>
             <p className="stat-number">{stats.totalUsers || 0}</p>
             <div className="stat-breakdown">
-              <span>👤 {stats.regularUsers || 0} Users</span>
-              <span>🏢 {stats.salesEmployees || 0} Sales</span>
-              <span>⚙️ {stats.admins || 0} Admins</span>
-              <span>👑 {stats.superAdmins || 0} Super Admins</span>
+              <span>Users: {stats.regularUsers || 0}</span>
+              <span>Sales: {stats.salesEmployees || 0}</span>
+              <span>Admins: {stats.admins || 0}</span>
+              <span>Super Admins: {stats.superAdmins || 0}</span>
             </div>
           </div>
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon">🚗</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Total Cars</h3>
             <p className="stat-number">{stats.totalCars || 0}</p>
             <div className="stat-breakdown">
-              <span>🏪 Marketplace: {marketplaceCars}</span>
-              <span>🚗 Dealership: {dealershipCars}</span>
-              <span>✅ Available: {stats.availableCars || 0}</span>
-              <span>💰 Sold: {stats.soldCars || 0}</span>
+              <span>Marketplace: {marketplaceCars}</span>
+              <span>Dealership: {dealershipCars}</span>
+              <span>Available: {stats.availableCars || 0}</span>
+              <span>Sold: {stats.soldCars || 0}</span>
             </div>
           </div>
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon">🔍</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Pending Inspections</h3>
             <p className="stat-number">{pendingInspections}</p>
@@ -310,7 +310,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon">🚗</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Pending Test Drives</h3>
             <p className="stat-number">{pendingTestDrives}</p>
@@ -318,7 +318,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon">🔄</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Pending Trade-Ins</h3>
             <p className="stat-number">{pendingTradeIns}</p>
@@ -326,7 +326,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon">💬</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>Total Messages</h3>
             <p className="stat-number">{stats.totalMessages || 0}</p>
@@ -334,7 +334,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         </div>
         
         <div className="stat-card full-width">
-          <h3>📊 Recent Users</h3>
+          <h3>Recent Users</h3>
           <div className="recent-list">
             {stats.recentUsers?.length > 0 ? stats.recentUsers.map(userItem => (
               <div key={userItem.id} className="recent-item">
@@ -349,13 +349,13 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         </div>
         
         <div className="stat-card full-width">
-          <h3>🚗 Recent Car Listings</h3>
+          <h3>Recent Car Listings</h3>
           <div className="recent-list">
             {stats.recentCars?.length > 0 ? stats.recentCars.map(car => (
               <div key={car.id} className="recent-item">
                 <span>{car.year} {car.make} {car.model}</span>
                 <span className="source-badge-small" style={{ background: car.carSource === 'DEALERSHIP' ? 'var(--gold-pale)' : 'var(--gray-light)' }}>
-                  {car.carSource === 'DEALERSHIP' ? '🏢 Dealership' : '👤 Marketplace'}
+                  {car.carSource === 'DEALERSHIP' ? 'Dealership' : 'Marketplace'}
                 </span>
                 <span className="price-badge">${car.price?.toLocaleString()}</span>
                 <span className={`status-badge status-${car.status?.toLowerCase()}`}>
@@ -373,15 +373,14 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     <div className="admin-table-container">
       <table className="admin-table">
         <thead>
-          <tr>
+          植
             <th>ID</th>
             <th>Username</th>
             <th>Email</th>
             <th>Role</th>
             <th>Employee Status</th>
             <th>Actions</th>
-          </tr>
-        </thead>
+          </thead>
         <tbody>
           {users.length > 0 ? users.map(userItem => (
             <tr key={userItem.id}>
@@ -409,16 +408,16 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               </td>
               <td>
                 {userItem.role === 'SALES_EMPLOYEE' && (
-                  <span className="employee-badge">🏢 Sales Employee</span>
+                  <span className="employee-badge">Sales Employee</span>
                 )}
                 {userItem.role === 'ADMIN' && (
-                  <span className="admin-badge">⚙️ Admin</span>
+                  <span className="admin-badge">Admin</span>
                 )}
                 {userItem.role === 'SUPER_ADMIN' && (
-                  <span className="super-admin-badge">👑 Super Admin</span>
+                  <span className="super-admin-badge">Super Admin</span>
                 )}
                 {userItem.role === 'USER' && (
-                  <span className="regular-user-badge">👤 Regular User</span>
+                  <span className="regular-user-badge">Regular User</span>
                 )}
               </td>
               <td>
@@ -472,7 +471,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               <td>${car.price?.toLocaleString()}</td>
               <td>
                 <span className={`source-badge-table ${car.carSource?.toLowerCase()}`}>
-                  {car.carSource === 'DEALERSHIP' ? '🏢 Dealership' : '👤 Marketplace'}
+                  {car.carSource === 'DEALERSHIP' ? 'Dealership' : 'Marketplace'}
                 </span>
               </td>
               <td>
@@ -506,21 +505,21 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                       onClick={() => updateInspectionStatus(car.id, 'PASSED')}
                       className="approve-inspection-btn"
                     >
-                      ✅ Pass
+                      Pass
                     </button>
                     <button 
                       onClick={() => updateInspectionStatus(car.id, 'FAILED')}
                       className="reject-inspection-btn"
                     >
-                      ❌ Fail
+                      Fail
                     </button>
                   </div>
                 )}
                 {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
-                  <span style={{ color: '#10b981' }}>✓ Approved</span>
+                  <span style={{ color: '#10b981' }}>Approved</span>
                 )}
                 {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'FAILED' && (
-                  <span style={{ color: '#ef4444' }}>✗ Failed</span>
+                  <span style={{ color: '#ef4444' }}>Failed</span>
                 )}
                 {car.carSource !== 'DEALERSHIP' && <span>—</span>}
               </td>
@@ -624,13 +623,13 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                       onClick={() => updateTestDriveStatus(td.id, 'approve')}
                       className="approve-btn"
                     >
-                      ✅ Approve
+                      Approve
                     </button>
                     <button 
                       onClick={() => updateTestDriveStatus(td.id, 'cancel')}
                       className="cancel-btn"
                     >
-                      ❌ Cancel
+                      Cancel
                     </button>
                   </div>
                 )}
@@ -639,14 +638,14 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                     onClick={() => updateTestDriveStatus(td.id, 'complete')}
                     className="complete-btn"
                   >
-                    ✓ Mark Completed
+                    Mark Completed
                   </button>
                 )}
                 {td.status === 'COMPLETED' && (
-                  <span style={{ color: '#10b981' }}>✓ Done</span>
+                  <span style={{ color: '#10b981' }}>Done</span>
                 )}
                 {td.status === 'CANCELLED' && (
-                  <span style={{ color: '#ef4444' }}>✗ Cancelled</span>
+                  <span style={{ color: '#ef4444' }}>Cancelled</span>
                 )}
               </td>
             </tr>
@@ -719,10 +718,10 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   </div>
                 )}
                 {ti.status === 'APPROVED' && (
-                  <span style={{ color: '#10b981' }}>✓ Approved</span>
+                  <span style={{ color: '#10b981' }}>Approved</span>
                 )}
                 {ti.status === 'REJECTED' && (
-                  <span style={{ color: '#ef4444' }}>✗ Rejected</span>
+                  <span style={{ color: '#ef4444' }}>Rejected</span>
                 )}
               </td>
             </tr>
@@ -744,7 +743,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     <div className="admin-dashboard">
       <div className="admin-sidebar">
         <div className="admin-logo" onClick={() => onNavigate('home')}>
-          🚗 Admin Panel
+          Admin Panel
         </div>
         
         <div className="admin-user-info">
@@ -762,42 +761,42 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             className={`admin-nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            📊 Dashboard
+            Dashboard
           </button>
           <button 
             className={`admin-nav-link ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            👥 Users
+            Users
           </button>
           <button 
             className={`admin-nav-link ${activeTab === 'cars' ? 'active' : ''}`}
             onClick={() => setActiveTab('cars')}
           >
-            🚗 Cars
+            Cars
           </button>
           <button 
             className={`admin-nav-link ${activeTab === 'testdrives' ? 'active' : ''}`}
             onClick={() => setActiveTab('testdrives')}
           >
-            🚗 Test Drives
+            Test Drives
           </button>
           <button 
             className={`admin-nav-link ${activeTab === 'tradeins' ? 'active' : ''}`}
             onClick={() => setActiveTab('tradeins')}
           >
-            🔄 Trade-Ins
+            Trade-Ins
           </button>
           <button 
             className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
             onClick={() => setActiveTab('messages')}
           >
-            💬 Messages
+            Messages
           </button>
         </nav>
         
         <button className="admin-logout" onClick={onLogout}>
-          🚪 Logout
+          Logout
         </button>
       </div>
       
@@ -805,7 +804,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
         <div className="admin-header">
           <h2>Admin Control Panel</h2>
           <button className="back-to-site" onClick={() => onNavigate('dashboard')}>
-            ← Back to Dashboard
+            Back to Dashboard
           </button>
         </div>
         

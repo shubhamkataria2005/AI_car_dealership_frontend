@@ -86,13 +86,13 @@ const HomePage = ({ onNavigate }) => {
               className={`platform-tab ${activePlatform === 'marketplace' ? 'active' : ''}`}
               onClick={() => setActivePlatform('marketplace')}
             >
-              🏪 Marketplace (Private Sellers)
+              Marketplace (Private Sellers)
             </button>
             <button 
               className={`platform-tab ${activePlatform === 'dealership' ? 'active' : ''}`}
               onClick={() => setActivePlatform('dealership')}
             >
-              🚗 Dealership (Company Cars)
+              Dealership (Company Cars)
             </button>
           </div>
         </div>
@@ -101,9 +101,9 @@ const HomePage = ({ onNavigate }) => {
       <section className="search-section">
         <div className="container">
           <div className="search-bar-home">
-            {/* NEW: Keyword Search */}
+            {/* Keyword Search */}
             <div className="search-field">
-              <label>🔍 Search ANY Car</label>
+              <label>Search ANY Car</label>
               <input 
                 type="text" 
                 id="search-keyword"
@@ -191,10 +191,10 @@ const HomePage = ({ onNavigate }) => {
                          alt={`${car.year} ${car.make} ${car.model}`} />
                     <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
                     {car.carSource === 'DEALERSHIP' && (
-                      <span className="source-badge dealership">🏢 Dealership</span>
+                      <span className="source-badge dealership">Dealership</span>
                     )}
                     {car.carSource === 'MARKETPLACE' && (
-                      <span className="source-badge marketplace">👤 Private Seller</span>
+                      <span className="source-badge marketplace">Private Seller</span>
                     )}
                   </div>
                   <div className="car-card-body">
@@ -227,25 +227,25 @@ const HomePage = ({ onNavigate }) => {
           </div>
           <div className="why-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="why-card">
-              <span className="why-number">🏪</span>
+              <span className="why-number">Marketplace</span>
               <h3>Marketplace</h3>
               <p>Buy directly from private sellers. Find great deals and negotiate your own price. Like TradeMe but specialized for cars.</p>
               <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
-                <li>✓ Direct seller communication</li>
-                <li>✓ Negotiate your price</li>
-                <li>✓ List your own car</li>
-                <li>✓ AI-powered price suggestions</li>
+                <li>Direct seller communication</li>
+                <li>Negotiate your price</li>
+                <li>List your own car</li>
+                <li>AI-powered price suggestions</li>
               </ul>
             </div>
             <div className="why-card">
-              <span className="why-number">🚗</span>
+              <span className="why-number">Dealership</span>
               <h3>Dealership</h3>
               <p>Buy from our professionally inspected, company-owned inventory with full support and service options.</p>
               <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
-                <li>✓ 150+ point inspection</li>
-                <li>✓ Test drives available</li>
-                <li>✓ Service center access</li>
-                <li>✓ Warranty options</li>
+                <li>150+ point inspection</li>
+                <li>Test drives available</li>
+                <li>Service center access</li>
+                <li>Warranty options</li>
               </ul>
             </div>
           </div>

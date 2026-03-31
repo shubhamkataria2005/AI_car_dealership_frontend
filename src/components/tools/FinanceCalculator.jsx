@@ -1,3 +1,4 @@
+// src/components/tools/FinanceCalculator.jsx
 import React, { useState, useMemo } from 'react';
 import './Tools.css';
 
@@ -35,7 +36,7 @@ const FinanceCalculator = () => {
   return (
     <div className="tool-panel">
       <div className="tool-header">
-        <h2>💰 Finance Calculator</h2>
+        <h2>Finance Calculator</h2>
         <p>Estimate your monthly repayments instantly</p>
       </div>
 
@@ -50,7 +51,7 @@ const FinanceCalculator = () => {
               value={values.carPrice}
               onChange={e => set('carPrice', e.target.value)}
             />
-            <div className="range-labels"><span>$5,000</span><span>$1000,000</span></div>
+            <div className="range-labels"><span>$5,000</span><span>$1,000,000</span></div>
           </div>
 
           <div className="form-field">

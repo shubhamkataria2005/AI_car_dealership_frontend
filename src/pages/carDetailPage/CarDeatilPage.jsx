@@ -1,19 +1,21 @@
+// src/pages/carDetailPage/CarDeatilPage.jsx
 import React, { useState } from 'react';
 import './CarDeatilPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
-  const [bookingForm,   setBookingForm]   = useState({ name: '', phone: '', date: '', time: '' });
+  const [bookingForm, setBookingForm] = useState({ name: '', phone: '', date: '', time: '' });
   const [bookingStatus, setBookingStatus] = useState('');
-  const [activeTab,     setActiveTab]     = useState('details');
+  const [activeTab, setActiveTab] = useState('details');
 
-  // Message state
-  const [messageText,    setMessageText]    = useState('');
-  const [messageStatus,  setMessageStatus]  = useState(''); // 'success' | 'error' | 'sending' | ''
-  const [showMsgForm,    setShowMsgForm]    = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [messageStatus, setMessageStatus] = useState('');
+  const [showMsgForm, setShowMsgForm] = useState(false);
 
-  // ── No car passed ──────────────────────────────────────────────────────
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState('');
+
   if (!car) {
     return (
       <div className="car-detail-page page">
@@ -21,10 +23,10 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
           <p style={{ padding: '48px 0', textAlign: 'center', color: 'var(--gray-dark)' }}>
             No car selected.{' '}
             <button
-              style={{ color: 'var(--blue)', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+              style={{ color: 'var(--gold)', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}
               onClick={() => onNavigate('inventory')}
             >
-              Browse inventory →
+              Browse inventory
             </button>
           </p>
         </div>
@@ -32,7 +34,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
     );
   }
 
-  // ── Booking handlers ───────────────────────────────────────────────────
   const handleBookingChange = e =>
     setBookingForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -43,7 +44,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
     setBookingForm({ name: '', phone: '', date: '', time: '' });
   };
 
-  // ── Send message ───────────────────────────────────────────────────────
   const handleSendMessage = async () => {
     if (!user) { onNavigate('login'); return; }
     if (!messageText.trim()) return;
@@ -56,13 +56,13 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
       const response = await fetch(`${API_BASE_URL}/api/messages/send`, {
         method: 'POST',
         headers: {
-          'Content-Type':  'application/json',
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           receiverId: car.sellerId,
-          carId:      car.id,
-          content:    messageText
+          carId: car.id,
+          content: messageText
         })
       });
 
@@ -84,30 +84,45 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
     }
   };
 
-  // ── Spec rows ──────────────────────────────────────────────────────────
+  const handlePurchase = () => {
+    if (!user) {
+      onNavigate('login');
+      return;
+    }
+
+    if (car.status !== 'AVAILABLE') {
+      alert('This car is no longer available for purchase.');
+      return;
+    }
+
+    onNavigate('checkout', car);
+  };
+
   const specs = [
-    { label: 'Year',         value: car.year },
-    { label: 'Make',         value: car.make },
-    { label: 'Model',        value: car.model },
-    { label: 'Mileage',      value: car.mileage ? `${car.mileage.toLocaleString()} km` : null },
-    { label: 'Fuel Type',    value: car.fuel },
+    { label: 'Year', value: car.year },
+    { label: 'Make', value: car.make },
+    { label: 'Model', value: car.model },
+    { label: 'Mileage', value: car.mileage ? `${car.mileage.toLocaleString()} km` : null },
+    { label: 'Fuel Type', value: car.fuel },
     { label: 'Transmission', value: car.transmission },
-    { label: 'Body Type',    value: car.bodyType },
-    { label: 'Seller',       value: car.sellerName },
+    { label: 'Body Type', value: car.bodyType },
+    { label: 'Seller', value: car.sellerName },
   ];
 
   const isSeller = user && user.id === car.sellerId;
+  const isAvailable = car.status === 'AVAILABLE';
+  const isSold = car.status === 'SOLD';
+  const isReserved = car.status === 'RESERVED';
 
   return (
     <div className="car-detail-page page">
 
-      {/* Breadcrumb */}
       <div className="breadcrumb">
         <div className="container">
           <button onClick={() => onNavigate('home')}>Home</button>
-          <span>›</span>
+          <span>/</span>
           <button onClick={() => onNavigate('inventory')}>Inventory</button>
-          <span>›</span>
+          <span>/</span>
           <span>{car.year} {car.make} {car.model}</span>
         </div>
       </div>
@@ -115,7 +130,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
       <div className="container">
         <div className="detail-layout">
 
-          {/* ── LEFT: image + tabs ── */}
           <div className="detail-left">
             <div className="detail-image">
               <img
@@ -123,10 +137,12 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                 alt={`${car.year} ${car.make} ${car.model}`}
               />
               {car.badge && <span className="car-badge-lg">{car.badge}</span>}
+              {isSold && <span className="car-badge-lg" style={{ background: '#991b1b' }}>SOLD</span>}
+              {isReserved && <span className="car-badge-lg" style={{ background: '#e67e22' }}>RESERVED</span>}
             </div>
 
             <div className="detail-tabs">
-              <button className={`tab-btn ${activeTab === 'details'  ? 'active' : ''}`} onClick={() => setActiveTab('details')}>Specifications</button>
+              <button className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>Specifications</button>
               <button className={`tab-btn ${activeTab === 'features' ? 'active' : ''}`} onClick={() => setActiveTab('features')}>Features</button>
             </div>
 
@@ -152,30 +168,107 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
             )}
           </div>
 
-          {/* ── RIGHT: price, messaging, booking ── */}
           <div className="detail-right">
 
-            {/* Price summary */}
             <div className="detail-summary">
               <h1>{car.year} {car.make} {car.model}</h1>
               <div className="detail-price">${car.price?.toLocaleString()}</div>
               <div className="detail-quick-specs">
-                <span>🛣 {car.mileage?.toLocaleString()} km</span>
-                <span>⛽ {car.fuel}</span>
-                <span>⚙️ {car.transmission}</span>
+                <span>{car.mileage?.toLocaleString()} km</span>
+                <span>{car.fuel}</span>
+                <span>{car.transmission}</span>
               </div>
               {car.sellerName && (
                 <div className="detail-quick-specs">
-                  <span>👤 {car.sellerName}</span>
+                  <span>{car.sellerName}</span>
+                </div>
+              )}
+              {car.carSource === 'DEALERSHIP' && (
+                <div className="detail-quick-specs">
+                  <span>Dealership Car</span>
+                  {car.inspectionStatus === 'PASSED' && <span>Inspected</span>}
                 </div>
               )}
             </div>
 
-            {/* ── MESSAGE SELLER ── */}
-            <div className="booking-card">
-              <h3>💬 Message Seller</h3>
+            {!isSeller && user && isAvailable && (
+              <div className="booking-card">
+                <h3>Purchase This Car</h3>
+                {purchaseError && (
+                  <div className="auth-error" style={{ marginBottom: '12px' }}>
+                    {purchaseError}
+                  </div>
+                )}
+                <button
+                  className="booking-submit"
+                  onClick={handlePurchase}
+                  disabled={purchasing}
+                  style={{ background: 'var(--gold)', borderColor: 'var(--gold)', marginBottom: '12px' }}
+                >
+                  {purchasing ? 'Processing...' : 'Buy Now'}
+                </button>
+                <p style={{ fontSize: '12px', color: 'var(--gray)', marginTop: '8px', textAlign: 'center' }}>
+                  Secure checkout. Fill in your details to complete purchase.
+                </p>
+              </div>
+            )}
 
-              {/* Not logged in */}
+            {!user && isAvailable && (
+              <div className="booking-card">
+                <h3>Buy This Car</h3>
+                <p style={{ fontSize: '14px', color: 'var(--gray-dark)', marginBottom: '12px' }}>
+                  Login to purchase this vehicle.
+                </p>
+                <button className="booking-submit" onClick={() => onNavigate('login')}>
+                  Login to Buy
+                </button>
+              </div>
+            )}
+
+            {isSeller && (
+              <div className="booking-card">
+                <h3>Your Listing</h3>
+                <p style={{ fontSize: '14px', color: 'var(--gray-dark)' }}>
+                  This is your car listing. Check your dashboard for inquiries.
+                </p>
+                <button
+                  className="btn-outline"
+                  style={{ width: '100%', marginTop: '12px' }}
+                  onClick={() => onNavigate('dashboard')}
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            )}
+
+            {isSold && (
+              <div className="booking-card">
+                <h3>Sold</h3>
+                <p style={{ fontSize: '14px', color: 'var(--gray-dark)' }}>
+                  This vehicle has been sold. Check our inventory for similar cars.
+                </p>
+                <button
+                  className="btn-outline"
+                  style={{ width: '100%', marginTop: '12px' }}
+                  onClick={() => onNavigate('inventory')}
+                >
+                  Browse More Cars
+                </button>
+              </div>
+            )}
+
+            {isReserved && (
+              <div className="booking-card">
+                <h3>Reserved - Pending Payment</h3>
+                <p style={{ fontSize: '14px', color: 'var(--gray-dark)' }}>
+                  This vehicle has been reserved by another buyer. If payment is not completed within 24 hours, it will become available again.
+                </p>
+              </div>
+            )}
+
+            <div className="booking-card">
+              <h3>Message Seller</h3>
+
               {!user && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <p style={{ fontSize: '14px', color: 'var(--gray-dark)', margin: 0 }}>
@@ -187,7 +280,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                 </div>
               )}
 
-              {/* This is your own listing */}
               {isSeller && (
                 <p style={{ fontSize: '14px', color: 'var(--gray-dark)', margin: 0 }}>
                   This is your listing. Check your{' '}
@@ -201,13 +293,11 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                 </p>
               )}
 
-              {/* Logged in, not seller */}
               {user && !isSeller && (
                 <>
-                  {/* Success banner */}
                   {messageStatus === 'success' && (
                     <div className="booking-success" style={{ marginBottom: '12px' }}>
-                      <span>✅</span>
+                      <span>✓</span>
                       <div>
                         <strong>Message Sent!</strong>
                         <p>The seller will get back to you soon. Check your inbox in the dashboard.</p>
@@ -215,21 +305,19 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                     </div>
                   )}
 
-                  {/* Error banner */}
                   {messageStatus === 'error' && (
                     <div className="auth-error" style={{ marginBottom: '12px' }}>
-                      ❌ Failed to send. Please try again.
+                      Failed to send. Please try again.
                     </div>
                   )}
 
-                  {/* Form toggle */}
                   {!showMsgForm ? (
                     <button
                       className="booking-submit"
                       onClick={() => setShowMsgForm(true)}
                       style={{ background: 'var(--black)' }}
                     >
-                      📧 Contact Seller
+                      Contact Seller
                     </button>
                   ) : (
                     <div className="booking-form">
@@ -258,7 +346,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                           disabled={!messageText.trim() || messageStatus === 'sending'}
                           style={{ flex: 1 }}
                         >
-                          {messageStatus === 'sending' ? 'Sending...' : '📤 Send Message'}
+                          {messageStatus === 'sending' ? 'Sending...' : 'Send Message'}
                         </button>
                         <button
                           onClick={() => { setShowMsgForm(false); setMessageText(''); }}
@@ -281,22 +369,20 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
               )}
             </div>
 
-            {/* Finance teaser */}
             <div className="finance-teaser">
-              <span>💳</span>
+              <span>$</span>
               <div>
-                <strong>From ~${Math.round((car.price || 0) / 60 / 10) * 10}/month</strong>
+                <strong>From ${Math.round((car.price || 0) / 60 / 10) * 10}/month</strong>
                 <p>Over 60 months. Use our finance calculator in the dashboard.</p>
               </div>
             </div>
 
-            {/* ── TEST DRIVE BOOKING ── */}
             <div className="booking-card">
-              <h3>📅 Book a Test Drive</h3>
+              <h3>Book a Test Drive</h3>
 
               {bookingStatus === 'success' ? (
                 <div className="booking-success">
-                  <span>✅</span>
+                  <span>✓</span>
                   <div>
                     <strong>Booking Confirmed!</strong>
                     <p>We'll contact you to confirm your appointment.</p>
@@ -332,14 +418,13 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                       You need to <button type="button" onClick={() => onNavigate('login')}>login</button> to book.
                     </p>
                   )}
-                  <button type="submit" className="booking-submit">
+                  <button type="submit" className="booking-submit" disabled={!user}>
                     {user ? 'Book Test Drive' : 'Login to Book'}
                   </button>
                 </form>
               )}
             </div>
 
-            {/* AI assistant shortcut */}
             <div className="enquire-box">
               <p>Have more questions about this vehicle?</p>
               <button
@@ -347,7 +432,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => user ? onNavigate('dashboard') : onNavigate('login')}
               >
-                🤖 Chat with AI Assistant
+                Chat with AI Assistant
               </button>
             </div>
 

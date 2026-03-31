@@ -1,3 +1,4 @@
+// src/components/navbar/Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 
@@ -9,7 +10,6 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
     { label: 'Inventory', page: 'inventory' },
   ];
 
-  // Close mobile menu when navigating
   const handleNavigate = (page) => {
     onNavigate(page);
     setMenuOpen(false);
@@ -21,7 +21,7 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
 
         {/* Logo */}
         <button className="navbar-logo" onClick={() => handleNavigate('home')}>
-          <span className="logo-icon">🚗</span>
+          <span className="logo-icon"></span>
           <span className="logo-text">Shubham's Car Dealership</span>
         </button>
 

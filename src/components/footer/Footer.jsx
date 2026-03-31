@@ -1,3 +1,4 @@
+// src/components/footer/Footer.jsx
 import React from 'react';
 import './Footer.css';
 
@@ -29,10 +30,10 @@ const Footer = ({ onNavigate }) => {
 
         <div className="footer-contact">
           <h4>Contact</h4>
-          <p>📍 Auckland, New Zealand</p>
-          <p>📞 +64 220 632 005</p>
-          <p>✉️ shubham3510@cars.co.nz</p>
-          <p>⏰ Mon–Sat, 9am–6pm</p>
+          <p>Auckland, New Zealand</p>
+          <p>+64 220 632 005</p>
+          <p>hello@shubhamscars.co.nz</p>
+          <p>Mon–Sat, 9am–6pm</p>
         </div>
 
       </div>

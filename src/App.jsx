@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/navbar/Navbar.jsx';
@@ -8,7 +9,9 @@ import CarDetailPage from './pages/carDetailPage/CarDeatilPage.jsx';
 import DashboardPage from './pages/dashboardPage/DashboardPage.jsx';
 import LoginPage from './pages/loginPage/LoginPage.jsx';
 import RegisterPage from './pages/registerPage/RegisterPage.jsx';
-import AdminDashboard from './pages/admin/AdminDashboard.jsx';  // ADD THIS IMPORT
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import CheckoutPage from './pages/checkout/CheckoutPage.jsx';
+import PurchaseSuccessPage from './pages/purchaseSuccess/PurchaseSuccessPage.jsx';
 import './App.css';
 
 function App() {
@@ -22,16 +25,17 @@ function App() {
     if (data && page === 'car-detail') {
       setCurrentCar(data);
     }
+    if (data && page === 'checkout') {
+      setCurrentCar(data);
+    }
   };
 
   const handleLoginSuccess = (userData, token) => {
     console.log('Login success, setting user and navigating to dashboard');
     setUser(userData);
     setSessionToken(token);
-    // Store token in localStorage for persistence
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
-    // Force navigation to dashboard
     setCurrentPage('dashboard');
   };
 
@@ -44,7 +48,6 @@ function App() {
     setCurrentPage('home');
   };
 
-  // Check for existing session on load
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
@@ -52,7 +55,6 @@ function App() {
       console.log('Found stored session, restoring user');
       setSessionToken(storedToken);
       setUser(JSON.parse(storedUser));
-      // Don't automatically navigate to dashboard on load, let the URL decide
     }
   }, []);
 
@@ -75,7 +77,6 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Sync navigation state with URL changes
   useEffect(() => {
     const path = location.pathname;
     if (path === '/' && currentPage !== 'home') {
@@ -84,10 +85,14 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
       onNavigate('inventory');
     } else if (path.startsWith('/car/') && currentPage !== 'car-detail') {
       onNavigate('car-detail');
+    } else if (path === '/checkout' && currentPage !== 'checkout') {
+      onNavigate('checkout');
     } else if (path === '/dashboard' && currentPage !== 'dashboard') {
       onNavigate('dashboard');
-    } else if (path === '/admin' && currentPage !== 'admin') {  // ADD THIS
+    } else if (path === '/admin' && currentPage !== 'admin') {
       onNavigate('admin');
+    } else if (path === '/purchase-success' && currentPage !== 'purchase-success') {
+      onNavigate('purchase-success');
     } else if (path === '/login' && currentPage !== 'login') {
       onNavigate('login');
     } else if (path === '/register' && currentPage !== 'register') {
@@ -95,7 +100,6 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
     }
   }, [location.pathname]);
 
-  // Navigate when currentPage changes
   useEffect(() => {
     console.log('Current page changed to:', currentPage);
     switch(currentPage) {
@@ -110,11 +114,17 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
           navigate(`/car/${currentCar.id}`);
         }
         break;
+      case 'checkout':
+        if (location.pathname !== '/checkout') navigate('/checkout');
+        break;
       case 'dashboard':
         if (location.pathname !== '/dashboard') navigate('/dashboard');
         break;
-      case 'admin':  // ADD THIS CASE
+      case 'admin':
         if (location.pathname !== '/admin') navigate('/admin');
+        break;
+      case 'purchase-success':
+        if (location.pathname !== '/purchase-success') navigate('/purchase-success');
         break;
       case 'login':
         if (location.pathname !== '/login') navigate('/login');
@@ -132,7 +142,6 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
     onNavigate(page, data);
   };
 
-  // Protect dashboard and admin routes
   if ((currentPage === 'dashboard' || currentPage === 'admin') && !user) {
     console.log('Protected route: redirecting to login');
     setTimeout(() => handleNavigateWrapper('login'), 0);
@@ -163,6 +172,25 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
             } 
           />
           <Route 
+            path="/checkout" 
+            element={
+              <CheckoutPage 
+                car={currentCar}
+                user={user}
+                sessionToken={sessionToken}
+                onNavigate={handleNavigateWrapper}
+              />
+            } 
+          />
+          <Route 
+            path="/purchase-success" 
+            element={
+              <PurchaseSuccessPage 
+                onNavigate={handleNavigateWrapper}
+              />
+            } 
+          />
+          <Route 
             path="/dashboard" 
             element={
               user ? 
@@ -175,7 +203,6 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
                 <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
             } 
           />
-          {/* ADD ADMIN ROUTE */}
           <Route 
             path="/admin" 
             element={

@@ -1,10 +1,11 @@
+// src/components/tools/ChatAssistant.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import './Tools.css';
 import { API_BASE_URL } from '../../config';
 
 const ChatAssistant = ({ user, sessionToken }) => {
   const [messages, setMessages] = useState([
-    { text: `Hi ${user?.username || 'there'}! 👋 I'm your AI car assistant. Ask me anything about cars, financing, or the buying process!`, sender: 'bot' }
+    { text: `Hi ${user?.username || 'there'}! I'm your AI car assistant. Ask me anything about cars, financing, or the buying process!`, sender: 'bot' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +61,7 @@ const ChatAssistant = ({ user, sessionToken }) => {
   return (
     <div className="tool-panel">
       <div className="tool-header">
-        <h2>💬 AI Car Assistant</h2>
+        <h2>AI Car Assistant</h2>
         <p>Ask anything about our cars, financing, or buying process. Powered by OpenAI.</p>
       </div>
 

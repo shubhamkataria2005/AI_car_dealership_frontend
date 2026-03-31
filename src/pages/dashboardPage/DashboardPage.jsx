@@ -165,13 +165,20 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
     if (showListCarForm) return renderListCarForm(false);
     if (showDealershipForm) return renderListCarForm(true);
     switch (activeTool) {
-      case 'messages':   return <MessagesInbox user={user} sessionToken={token} />;
-      case 'service':    return <ServiceCenter user={user} sessionToken={token} />;
-      case 'tradein':    return <TradeInCalculator user={user} sessionToken={token} />;
-      case 'chat':       return <ChatAssistant user={user} sessionToken={token} />;
-      case 'recognizer': return <CarRecognizer sessionToken={token} />;
-      case 'finance':    return <FinanceCalculator />;
-      default:           return <ChatAssistant user={user} sessionToken={token} />;
+      case 'messages':   
+        return <MessagesInbox user={user} sessionToken={token} />;
+      case 'service':    
+        return <ServiceCenter user={user} sessionToken={token} />;
+      case 'tradein':    
+        return <TradeInCalculator user={user} sessionToken={token} />;
+      case 'chat':       
+        return <ChatAssistant user={user} sessionToken={token} />;
+      case 'recognizer': 
+        return <CarRecognizer sessionToken={token} user={user} />;
+      case 'finance':    
+        return <FinanceCalculator />;
+      default:           
+        return <ChatAssistant user={user} sessionToken={token} />;
     }
   };
 

@@ -1,4 +1,4 @@
-// src/components/tools/TradeInCalculator.jsx
+// src/components/tools/TradeInCalculator.jsx (Original)
 import React, { useState } from 'react';
 import './Tools.css';
 import { API_BASE_URL } from '../../config';
@@ -11,11 +11,11 @@ const TradeInCalculator = ({ user, sessionToken }) => {
     year: new Date().getFullYear(),
     mileage: '',
     condition: 'GOOD',
-    body_type: 'Sedan',        // NEW
-    fuel_type: 'Petrol',        // NEW
-    transmission: 'Automatic',  // NEW
-    owners: 1,                  // NEW
-    engine_size: 2.0,           // NEW
+    body_type: 'Sedan',
+    fuel_type: 'Petrol',
+    transmission: 'Automatic',
+    owners: 1,
+    engine_size: 2.0,
     notes: ''
   });
   const [estimate, setEstimate] = useState(null);
@@ -90,7 +90,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
       if (data.success) {
         setEstimate(data.estimatedValue);
         if (data.model) {
-          console.log(`✅ Prediction using: ${data.model}`);
+          console.log(`✓ Prediction using: ${data.model}`);
         }
       } else {
         setMessage(data.message || 'Failed to calculate estimate');
@@ -138,7 +138,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
       const data = await response.json();
       if (data.success) {
         setSubmitted(true);
-        setMessage('✅ Trade-in request submitted! We will contact you soon.');
+        setMessage('✓ Trade-in request submitted! We will contact you soon.');
       } else {
         setMessage(data.message || 'Failed to submit trade-in');
       }
@@ -153,11 +153,10 @@ const TradeInCalculator = ({ user, sessionToken }) => {
     return (
       <div className="tool-panel">
         <div className="tool-header">
-          <h2>🚗 Trade-In Request Submitted!</h2>
+          <h2>Trade-In Request Submitted!</h2>
           <p>Thank you for your interest. Our team will review your trade-in and contact you within 24-48 hours.</p>
         </div>
         <div style={{ padding: '24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
           {estimate && <h3>Estimated Value: ${estimate.toLocaleString()}</h3>}
           <button 
             onClick={() => { setSubmitted(false); setEstimate(null); setFormData({ 
@@ -177,7 +176,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
   return (
     <div className="tool-panel">
       <div className="tool-header">
-        <h2>🔄 Trade-In Your Car</h2>
+        <h2>Trade-In Your Car</h2>
         <p>Get an AI-powered estimate for your current car and trade it in when buying your next vehicle</p>
       </div>
 
@@ -341,7 +340,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
               className="booking-submit"
               style={{ marginTop: '8px' }}
             >
-              {loading ? 'Calculating...' : '💰 Get AI-Powered Estimate'}
+              {loading ? 'Calculating...' : 'Get AI-Powered Estimate'}
             </button>
           ) : (
             <div>
@@ -376,14 +375,14 @@ const TradeInCalculator = ({ user, sessionToken }) => {
           )}
 
           {message && (
-            <div style={{ marginTop: '16px', padding: '12px', background: message.includes('✅') ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius)', color: message.includes('✅') ? '#166534' : '#991b1b' }}>
+            <div style={{ marginTop: '16px', padding: '12px', background: message.includes('✓') ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius)', color: message.includes('✓') ? '#166534' : '#991b1b' }}>
               {message}
             </div>
           )}
         </div>
 
         <div className="tool-info" style={{ marginTop: '24px' }}>
-          <h4>📋 How AI-Powered Trade-In Works:</h4>
+          <h4>How AI-Powered Trade-In Works:</h4>
           <ol style={{ marginTop: '8px', paddingLeft: '20px' }}>
             <li>Enter your vehicle registration (rego)</li>
             <li>Tell us about your current car (make, model, year, mileage, condition)</li>
@@ -394,7 +393,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
             <li>Trade-in value applied as discount on your new car purchase</li>
           </ol>
           <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray)' }}>
-            🤖 Our ML model was trained on 92,661 car records and achieves 93% accuracy in price prediction.
+            Our ML model was trained on 92,661 car records and achieves 93% accuracy in price prediction.
           </p>
         </div>
       </div>

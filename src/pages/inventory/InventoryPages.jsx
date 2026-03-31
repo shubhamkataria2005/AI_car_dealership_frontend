@@ -7,7 +7,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ 
-    keyword: '',  // NEW: Keyword search
+    keyword: '',
     make: 'All', 
     body: 'All', 
     fuel: 'All', 
@@ -18,10 +18,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    // Load filters from navigation if passed
     if (locationFilters?.filters) {
       const newFilters = { ...filters, ...locationFilters.filters };
-      // Handle source mapping
       if (locationFilters.filters.source) {
         if (locationFilters.filters.source === 'marketplace') {
           newFilters.source = 'Marketplace';
@@ -29,7 +27,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
           newFilters.source = 'Dealership';
         }
       }
-      // Handle keyword from search
       if (locationFilters.filters.keyword) {
         newFilters.keyword = locationFilters.filters.keyword;
       }
@@ -58,7 +55,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
   const filtered = cars
     .filter(car => {
-      // NEW: Keyword search - searches make, model, year, description
       if (filters.keyword) {
         const searchLower = filters.keyword.toLowerCase();
         const matchesSearch = 
@@ -69,38 +65,26 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         if (!matchesSearch) return false;
       }
       
-      // Make filter
       if (filters.make !== 'All' && car.make !== filters.make) return false;
-      
-      // Body type filter
       if (filters.body !== 'All' && car.bodyType !== filters.body) return false;
-      
-      // Fuel filter
       if (filters.fuel !== 'All' && car.fuel !== filters.fuel) return false;
-      
-      // Price filter
       if (car.price > filters.maxPrice) return false;
-      
-      // Legacy search filter (make, model, year)
       if (search && !`${car.make} ${car.model} ${car.year}`.toLowerCase().includes(search.toLowerCase())) return false;
       
-      // Source filter
       if (filters.source !== 'All') {
         const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
         if (car.carSource !== expectedSource) return false;
       }
       
-      // Only show available cars
       return car.status === 'AVAILABLE';
     })
     .sort((a, b) => {
       if (filters.sortBy === 'price-low') return a.price - b.price;
       if (filters.sortBy === 'price-high') return b.price - a.price;
       if (filters.sortBy === 'mileage') return a.mileage - b.mileage;
-      return b.year - a.year; // newest first
+      return b.year - a.year;
     });
 
-  // Get counts for each source
   const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && c.status === 'AVAILABLE').length;
   const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && c.status === 'AVAILABLE').length;
 
@@ -116,8 +100,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             <div className="inventory-stats">
               <span className="inventory-count">{filtered.length} vehicles available</span>
               <div className="inventory-source-badges">
-                <span className="source-badge-small marketplace">🏪 Marketplace: {marketplaceCount}</span>
-                <span className="source-badge-small dealership">🚗 Dealership: {dealershipCount}</span>
+                <span className="source-badge-small marketplace">Marketplace: {marketplaceCount}</span>
+                <span className="source-badge-small dealership">Dealership: {dealershipCount}</span>
               </div>
             </div>
           </div>
@@ -128,9 +112,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         <aside className="filters-sidebar">
           <h3>Filter Cars</h3>
 
-          {/* NEW: Keyword Search - Search ANY car */}
           <div className="filter-group">
-            <label>🔍 Search ANY Car</label>
+            <label>Search ANY Car</label>
             <input 
               type="text" 
               placeholder="Search any make, model, year, or keyword..."
@@ -147,7 +130,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             />
           </div>
 
-          {/* Existing Search */}
           <div className="filter-group">
             <label>Search</label>
             <input 
@@ -158,7 +140,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             />
           </div>
 
-          {/* Source Filter */}
           <div className="filter-group">
             <label>Car Source</label>
             <div className="filter-chips">
@@ -168,7 +149,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                   className={`filter-chip ${filters.source === s ? 'active' : ''}`} 
                   onClick={() => setFilter('source', s)}
                 >
-                  {s === 'Marketplace' ? '🏪 Marketplace' : s === 'Dealership' ? '🚗 Dealership' : 'All'}
+                  {s === 'Marketplace' ? 'Marketplace' : s === 'Dealership' ? 'Dealership' : 'All'}
                 </button>
               ))}
             </div>
@@ -312,16 +293,14 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                       alt={`${car.year} ${car.make} ${car.model}`} 
                     />
                     <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
-                    {/* Source Badge */}
                     {car.carSource === 'DEALERSHIP' && (
-                      <span className="source-badge dealership">🏢 Dealership</span>
+                      <span className="source-badge dealership">Dealership</span>
                     )}
                     {car.carSource === 'MARKETPLACE' && (
-                      <span className="source-badge marketplace">👤 Private Seller</span>
+                      <span className="source-badge marketplace">Private Seller</span>
                     )}
-                    {/* Inspection Status for Dealership Cars */}
                     {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
-                      <span className="inspection-badge">✓ Inspected</span>
+                      <span className="inspection-badge">Inspected</span>
                     )}
                   </div>
                   <div className="car-card-body">
@@ -336,7 +315,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                     </div>
                     {car.carSource === 'DEALERSHIP' && car.stockNumber && (
                       <div className="car-card-stock">
-                        <span>Stock #: {car.stockNumber}</span>
+                        <span>Stock: {car.stockNumber}</span>
                       </div>
                     )}
                     <div className="car-card-footer">

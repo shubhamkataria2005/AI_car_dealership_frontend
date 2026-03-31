@@ -16,10 +16,10 @@ const ServiceCenter = ({ user, sessionToken }) => {
   const [message, setMessage] = useState('');
 
   const serviceTypes = [
-    { value: 'TEST_DRIVE', label: '🚗 Test Drive', description: 'Schedule a test drive for any dealership car' },
-    { value: 'INSPECTION', label: '🔍 Pre-Purchase Inspection', description: 'Get a professional inspection before buying' },
-    { value: 'MAINTENANCE', label: '🛠️ Service & Maintenance', description: 'Regular maintenance for your car' },
-    { value: 'REPAIR', label: '🔧 Repair', description: 'Fix issues with your car' }
+    { value: 'TEST_DRIVE', label: 'Test Drive', description: 'Schedule a test drive for any dealership car' },
+    { value: 'INSPECTION', label: 'Pre-Purchase Inspection', description: 'Get a professional inspection before buying' },
+    { value: 'MAINTENANCE', label: 'Service & Maintenance', description: 'Regular maintenance for your car' },
+    { value: 'REPAIR', label: 'Repair', description: 'Fix issues with your car' }
   ];
 
   const fetchAppointments = async () => {
@@ -57,14 +57,14 @@ const ServiceCenter = ({ user, sessionToken }) => {
       
       const data = await response.json();
       if (data.success) {
-        setMessage('✅ Appointment booked successfully!');
+        setMessage('Appointment booked successfully!');
         setBookingForm({ carId: '', serviceType: 'TEST_DRIVE', appointmentDate: '', notes: '' });
         fetchAppointments();
       } else {
-        setMessage('❌ Failed to book appointment: ' + (data.message || 'Unknown error'));
+        setMessage('Failed to book appointment: ' + (data.message || 'Unknown error'));
       }
     } catch (err) {
-      setMessage('❌ Network error. Please try again.');
+      setMessage('Network error. Please try again.');
     } finally {
       setLoading(false);
       setTimeout(() => setMessage(''), 3000);
@@ -80,7 +80,7 @@ const ServiceCenter = ({ user, sessionToken }) => {
   return (
     <div className="tool-panel">
       <div className="tool-header">
-        <h2>🔧 Service Center</h2>
+        <h2>Service Center</h2>
         <p>Book test drives, inspections, and maintenance services</p>
       </div>
 
@@ -98,16 +98,16 @@ const ServiceCenter = ({ user, sessionToken }) => {
 
         {/* Booking Form */}
         <div style={{ background: 'var(--white)', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-lg)', padding: '24px', marginBottom: '32px' }}>
-          <h3 style={{ marginBottom: '20px', fontFamily: 'var(--font-serif)', fontSize: '20px' }}>📅 Book an Appointment</h3>
+          <h3 style={{ marginBottom: '20px', fontFamily: 'var(--font-serif)', fontSize: '20px' }}>Book an Appointment</h3>
           
           {message && (
             <div style={{ 
               marginBottom: '20px', 
               padding: '12px 16px', 
               borderRadius: 'var(--radius)', 
-              background: message.includes('✅') ? '#f0fdf4' : '#fef2f2',
-              border: `1px solid ${message.includes('✅') ? '#bbf7d0' : '#fecaca'}`,
-              color: message.includes('✅') ? '#166534' : '#991b1b'
+              background: message.includes('successfully') ? '#f0fdf4' : '#fef2f2',
+              border: `1px solid ${message.includes('successfully') ? '#bbf7d0' : '#fecaca'}`,
+              color: message.includes('successfully') ? '#166534' : '#991b1b'
             }}>
               {message}
             </div>
@@ -171,7 +171,7 @@ const ServiceCenter = ({ user, sessionToken }) => {
         {/* My Appointments */}
         {appointments.length > 0 && (
           <div>
-            <h3 style={{ marginBottom: '16px', fontFamily: 'var(--font-serif)', fontSize: '20px' }}>📋 Your Appointments</h3>
+            <h3 style={{ marginBottom: '16px', fontFamily: 'var(--font-serif)', fontSize: '20px' }}>Your Appointments</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {appointments.map(apt => (
                 <div key={apt.id} style={{ padding: '16px', background: 'var(--cream)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-lighter)' }}>
@@ -189,16 +189,16 @@ const ServiceCenter = ({ user, sessionToken }) => {
                     </span>
                   </div>
                   <div style={{ fontSize: '14px', color: 'var(--gray-dark)' }}>
-                    📅 {new Date(apt.appointmentDate).toLocaleString()}
+                    {new Date(apt.appointmentDate).toLocaleString()}
                   </div>
                   {apt.carId && (
                     <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '4px' }}>
-                      🚗 Car ID: {apt.carId}
+                      Car ID: {apt.carId}
                     </div>
                   )}
                   {apt.notes && (
                     <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--gray-lighter)' }}>
-                      📝 {apt.notes}
+                      Notes: {apt.notes}
                     </div>
                   )}
                 </div>
