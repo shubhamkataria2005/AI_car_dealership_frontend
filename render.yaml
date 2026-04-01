@@ -1,0 +1,18 @@
+# frontend/render.yaml
+services:
+  - type: web
+    name: ai-car-dealership-frontend
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://car-dealership-backend.onrender.com
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache

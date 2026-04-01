@@ -4,7 +4,7 @@ import './HomePage.css';
 import { api } from '../../services/api';
 
 const HomePage = ({ onNavigate }) => {
-  const [featuredCars, setFeaturedCars] = useState([]);
+  const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePlatform, setActivePlatform] = useState('both');
 
@@ -12,7 +12,7 @@ const HomePage = ({ onNavigate }) => {
     api.getAllCars()
       .then(data => {
         if (data.success) {
-          setFeaturedCars(data.cars.slice(0, 6));
+          setAllCars(data.cars);
         }
         setLoading(false);
       })
@@ -21,11 +21,28 @@ const HomePage = ({ onNavigate }) => {
       });
   }, []);
 
-  const displayedCars = featuredCars.filter(car => {
-    if (activePlatform === 'marketplace') return car.carSource === 'MARKETPLACE';
-    if (activePlatform === 'dealership') return car.carSource === 'DEALERSHIP';
-    return true;
-  });
+  const getDisplayedCars = () => {
+    if (activePlatform === 'marketplace') {
+      return allCars.filter(car => car.carSource === 'MARKETPLACE').slice(0, 6);
+    }
+    if (activePlatform === 'dealership') {
+      return allCars.filter(car => car.carSource === 'DEALERSHIP').slice(0, 6);
+    }
+    return allCars.slice(0, 12);
+  };
+
+  const getCarCount = () => {
+    if (activePlatform === 'marketplace') {
+      return allCars.filter(car => car.carSource === 'MARKETPLACE').length;
+    }
+    if (activePlatform === 'dealership') {
+      return allCars.filter(car => car.carSource === 'DEALERSHIP').length;
+    }
+    return allCars.length;
+  };
+
+  const displayedCars = getDisplayedCars();
+  const carCount = getCarCount();
 
   return (
     <div className="home-page page">
@@ -46,7 +63,7 @@ const HomePage = ({ onNavigate }) => {
             <div className="hero-divider" />
             <div className="hero-stats">
               <div className="hero-stat">
-                <strong>{loading ? '...' : featuredCars.length}+</strong>
+                <strong>{allCars.length}+</strong>
                 <span>Cars available</span>
               </div>
               <div className="hero-stat">
@@ -65,34 +82,33 @@ const HomePage = ({ onNavigate }) => {
               <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" alt="Premium used cars" />
             </div>
             <div className="hero-image-badge">
-              <strong>{loading ? '...' : featuredCars.length}+</strong>
+              <strong>{allCars.length}+</strong>
               <span>Vehicles available now</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Platform Selector */}
       <section className="platform-selector-section">
         <div className="container">
           <div className="platform-tabs">
-            <button 
+            <button
               className={`platform-tab ${activePlatform === 'both' ? 'active' : ''}`}
               onClick={() => setActivePlatform('both')}
             >
-              All Cars
+              All Cars ({allCars.length})
             </button>
-            <button 
+            <button
               className={`platform-tab ${activePlatform === 'marketplace' ? 'active' : ''}`}
               onClick={() => setActivePlatform('marketplace')}
             >
-              Marketplace (Private Sellers)
+              Marketplace ({allCars.filter(car => car.carSource === 'MARKETPLACE').length})
             </button>
-            <button 
+            <button
               className={`platform-tab ${activePlatform === 'dealership' ? 'active' : ''}`}
               onClick={() => setActivePlatform('dealership')}
             >
-              Dealership (Company Cars)
+              Dealership ({allCars.filter(car => car.carSource === 'DEALERSHIP').length})
             </button>
           </div>
         </div>
@@ -101,17 +117,16 @@ const HomePage = ({ onNavigate }) => {
       <section className="search-section">
         <div className="container">
           <div className="search-bar-home">
-            {/* Keyword Search */}
             <div className="search-field">
               <label>Search ANY Car</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 id="search-keyword"
                 placeholder="Search any make, model, year, or keyword..."
-                style={{ 
-                  padding: '11px 14px', 
-                  border: '1px solid var(--gray-lighter)', 
-                  borderRadius: 'var(--radius-sm)', 
+                style={{
+                  padding: '11px 14px',
+                  border: '1px solid var(--gray-lighter)',
+                  borderRadius: 'var(--radius-sm)',
                   fontSize: '14px',
                   width: '100%',
                   background: 'var(--white)'
@@ -153,7 +168,7 @@ const HomePage = ({ onNavigate }) => {
               const make = document.getElementById('search-make').value;
               const maxPrice = document.getElementById('search-price').value;
               const bodyType = document.getElementById('search-body').value;
-              const params = { source: activePlatform };
+              const params = { source: activePlatform === 'both' ? '' : activePlatform === 'marketplace' ? 'MARKETPLACE' : 'DEALERSHIP' };
               if (keyword) params.keyword = keyword;
               if (make) params.make = make;
               if (maxPrice) params.maxPrice = maxPrice;
@@ -187,8 +202,8 @@ const HomePage = ({ onNavigate }) => {
               displayedCars.map(car => (
                 <div key={car.id} className="car-card" onClick={() => onNavigate('car-detail', car)}>
                   <div className="car-card-image">
-                    <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'} 
-                         alt={`${car.year} ${car.make} ${car.model}`} />
+                    <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'}
+                      alt={`${car.year} ${car.make} ${car.model}`} />
                     <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
                     {car.carSource === 'DEALERSHIP' && (
                       <span className="source-badge dealership">Dealership</span>

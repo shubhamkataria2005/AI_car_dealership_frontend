@@ -1,5 +1,5 @@
 // src/components/navbar/Navbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Navbar.css';
 
 const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
@@ -19,13 +19,11 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
     <nav className="navbar">
       <div className="navbar-inner">
 
-        {/* Logo */}
         <button className="navbar-logo" onClick={() => handleNavigate('home')}>
           <span className="logo-icon"></span>
           <span className="logo-text">Shubham's Car Dealership</span>
         </button>
 
-        {/* Desktop links */}
         <ul className="navbar-links">
           {navLinks.map(link => (
             <li key={link.page}>
@@ -39,7 +37,6 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
           ))}
         </ul>
 
-        {/* Desktop auth */}
         <div className="navbar-auth">
           {user ? (
             <>
@@ -67,7 +64,6 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
           )}
         </div>
 
-        {/* Mobile hamburger */}
         <button
           className="navbar-hamburger"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -79,7 +75,6 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div className="navbar-mobile-menu">
           {navLinks.map(link => (

@@ -1,3 +1,4 @@
+/* src/components/navbar/Navbar.css */
 .navbar {
   position: sticky;
   top: 0;
@@ -16,7 +17,6 @@
   gap: 40px;
 }
 
-/* ── Logo ── */
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -28,7 +28,9 @@
   text-decoration: none;
 }
 
-.logo-icon { font-size: 20px; }
+.logo-icon {
+  font-size: 20px;
+}
 
 .logo-text {
   font-family: var(--font-serif);
@@ -39,7 +41,6 @@
   white-space: nowrap;
 }
 
-/* ── Nav links ── */
 .navbar-links {
   display: flex;
   align-items: center;
@@ -74,16 +75,23 @@
   transition: transform 0.25s ease;
 }
 
-.nav-link:hover { color: var(--black); }
-.nav-link:hover::after { transform: scaleX(1); }
+.nav-link:hover {
+  color: var(--black);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
 
 .nav-link.active {
   color: var(--black);
   font-weight: 600;
 }
-.nav-link.active::after { transform: scaleX(1); }
 
-/* ── Auth ── */
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
 .navbar-auth {
   display: flex;
   align-items: center;
@@ -111,7 +119,9 @@
   transition: color 0.2s;
 }
 
-.btn-nav-login:hover { color: var(--black); }
+.btn-nav-login:hover {
+  color: var(--black);
+}
 
 .btn-nav-register {
   padding: 9px 20px;
@@ -151,7 +161,6 @@
   color: var(--red);
 }
 
-/* ── Hamburger ── */
 .navbar-hamburger {
   display: none;
   flex-direction: column;
@@ -169,7 +178,6 @@
   background: var(--charcoal);
 }
 
-/* ── Mobile menu ── */
 .navbar-mobile-menu {
   display: flex;
   flex-direction: column;
@@ -197,11 +205,24 @@
   background: var(--gold-pale);
 }
 
-.mobile-logout { color: var(--red); }
-.mobile-logout:hover { background: #fef2f2; color: var(--red); }
+.mobile-logout {
+  color: var(--red);
+}
+
+.mobile-logout:hover {
+  background: #fef2f2;
+  color: var(--red);
+}
 
 @media (max-width: 768px) {
-  .navbar-links, .navbar-auth { display: none; }
-  .navbar-hamburger { display: flex; }
-  .navbar-inner { gap: 0; padding: 0 20px; }
+  .navbar-links, .navbar-auth {
+    display: none;
+  }
+  .navbar-hamburger {
+    display: flex;
+  }
+  .navbar-inner {
+    gap: 0;
+    padding: 0 20px;
+  }
 }
