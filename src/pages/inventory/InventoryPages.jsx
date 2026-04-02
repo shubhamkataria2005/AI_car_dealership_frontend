@@ -1,7 +1,7 @@
 // src/pages/inventory/InventoryPages.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import './InventoryPage.css';
-import { api } from '../../services/api';
+import { API_BASE_URL } from '../../config';
 
 const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [cars, setCars] = useState([]);
@@ -46,13 +46,22 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     setError('');
 
     try {
-      const data = await api.getAllCars();
+      console.log('Fetching cars from:', `${API_BASE_URL}/api/cars/all`);
+      const response = await fetch(`${API_BASE_URL}/api/cars/all`, {
+        signal: AbortSignal.timeout(30000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Fetched cars data:', data);
 
       if (data && data.success && Array.isArray(data.cars)) {
         setCars(data.cars);
         setError('');
       } else {
-        // Got a response but no cars array — unexpected format
         console.error('Unexpected API response:', data);
         setError('Received unexpected data from server. Please try again.');
         setCars([]);
@@ -60,19 +69,22 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     } catch (err) {
       console.error('Failed to fetch cars (attempt ' + (attempt + 1) + '):', err);
 
-      if (attempt < 2) {
-        // Render free tier can take 30–60s to wake up — retry automatically
-        setTimeout(() => {
-          setRetryCount(attempt + 1);
-          fetchCars(attempt + 1);
-        }, 5000);
-        setError(`Server is waking up... retrying in 5 seconds (attempt ${attempt + 1}/3)`);
+      if (err.name === 'TimeoutError' || err.message.includes('timeout')) {
+        setError('Request timeout - server may be starting up. Retrying...');
+        if (attempt < 2) {
+          setTimeout(() => fetchCars(attempt + 1), 5000);
+        }
+      } else if (attempt < 2) {
+        setError(`Connection issue. Retrying... (${attempt + 1}/3)`);
+        setTimeout(() => fetchCars(attempt + 1), 5000);
       } else {
-        setError('Could not connect to the server. Please refresh the page to try again.');
+        setError('Could not connect to the server. Please refresh the page.');
         setCars([]);
       }
     } finally {
-      setLoading(false);
+      if (!error || error.includes('Retrying')) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -100,9 +112,12 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     setSearch('');
   };
 
-  // Client-side filtering — API already returns only AVAILABLE cars
+  // Client-side filtering
   const filtered = cars
     .filter(car => {
+      // Only show available cars
+      if (car.status && car.status !== 'AVAILABLE') return false;
+
       // Keyword search across make, model, year, description
       if (filters.keyword) {
         const kw = filters.keyword.toLowerCase();
@@ -134,16 +149,13 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       if (filters.fuel !== 'All' && car.fuel !== filters.fuel) return false;
 
       // Price filter
-      if (car.price > filters.maxPrice) return false;
+      if (car.price && car.price > filters.maxPrice) return false;
 
       // Source filter
       if (filters.source !== 'All') {
         const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
         if (car.carSource !== expectedSource) return false;
       }
-
-      // Only show available cars (belt-and-suspenders check)
-      if (car.status && car.status !== 'AVAILABLE') return false;
 
       return true;
     })
@@ -155,8 +167,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       return (b.year || 0) - (a.year || 0);
     });
 
-  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE').length;
-  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP').length;
+  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && c.status === 'AVAILABLE').length;
+  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && c.status === 'AVAILABLE').length;
 
   return (
     <div className="inventory-page page">
@@ -189,7 +201,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
       <div className="inventory-layout container">
 
-        {/* ── Sidebar Filters ── */}
+        {/* Sidebar Filters */}
         <aside className="filters-sidebar">
           <h3>Filter Cars</h3>
 
@@ -304,7 +316,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
           </button>
         </aside>
 
-        {/* ── Main Content ── */}
+        {/* Main Content */}
         <div className="inventory-main">
           <div className="inventory-toolbar">
             <span className="results-count">
@@ -341,7 +353,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             }}>
               <div>
                 <strong style={{ color: '#92400e', display: 'block', marginBottom: '4px' }}>
-                  ⚠️ Connection Issue
+                  Connection Issue
                 </strong>
                 <p style={{ color: '#92400e', fontSize: '14px', margin: 0 }}>{error}</p>
               </div>
@@ -384,16 +396,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                   animation: 'spin 1s linear infinite',
                 }} />
                 <p style={{ color: 'var(--gray-dark)', fontSize: '15px' }}>
-                  {retryCount > 0
-                    ? `Waking up the server... (attempt ${retryCount + 1}/3)`
-                    : 'Loading vehicles...'
-                  }
+                  Loading vehicles...
                 </p>
-                {retryCount > 0 && (
-                  <p style={{ color: 'var(--gray)', fontSize: '13px', textAlign: 'center', maxWidth: '300px' }}>
-                    The server may be starting up. This can take up to 30 seconds on first load.
-                  </p>
-                )}
               </div>
               <style>{`
                 @keyframes spin {
@@ -410,9 +414,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               <span>🔍</span>
               <h3>No cars match your filters</h3>
               <p>Try different keywords or adjust your filters</p>
-              <p style={{ fontSize: '13px', color: 'var(--gold)', marginTop: '8px' }}>
-                Popular searches: SUV, Toyota, Electric, under $30k
-              </p>
               <button
                 className="reset-filters"
                 onClick={resetFilters}
