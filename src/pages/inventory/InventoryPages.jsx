@@ -14,7 +14,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     make: 'All',
     body: 'All',
     fuel: 'All',
-    maxPrice: 100000,
+    maxPrice: 1000000, // Increased to show luxury cars
     sortBy: 'newest',
     source: 'All'
   });
@@ -29,7 +29,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         make: incoming.make || 'All',
         body: incoming.bodyType || 'All',
         fuel: incoming.fuel || 'All',
-        maxPrice: incoming.maxPrice ? Number(incoming.maxPrice) : 100000,
+        maxPrice: incoming.maxPrice ? Number(incoming.maxPrice) : 1000000,
         source: incoming.source === 'MARKETPLACE'
           ? 'Marketplace'
           : incoming.source === 'DEALERSHIP'
@@ -77,7 +77,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         } else {
           // Log each car's status for debugging
           data.cars.forEach((car, index) => {
-            console.log(`Car ${index + 1}: ${car.make} ${car.model} - Status: ${car.status}, Source: ${car.carSource}`);
+            console.log(`Car ${index + 1}: ${car.make} ${car.model} - Status: "${car.status}", Price: ${car.price}`);
           });
           
           setCars(data.cars);
@@ -103,7 +103,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     fetchCars();
   }, [fetchCars]);
 
-  const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Hyundai', 'Kia', 'Volkswagen'];
+  const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Hyundai', 'Kia', 'Volkswagen', 'Ferrari', 'Lamborghini', 'McLaren', 'Porsche', 'Aston Martin', 'Rolls Royce', 'Bentley', 'Bugatti', 'Koenigsegg', 'Pagani', 'Rimac', 'Lotus'];
   const BODIES = ['All', 'Sedan', 'SUV', 'Hatchback', 'Ute', 'Wagon', 'Coupe', 'Convertible'];
   const FUELS = ['All', 'Petrol', 'Diesel', 'Hybrid', 'Electric'];
   const SOURCES = ['All', 'Marketplace', 'Dealership'];
@@ -116,26 +116,22 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       make: 'All',
       body: 'All',
       fuel: 'All',
-      maxPrice: 100000,
+      maxPrice: 1000000,
       sortBy: 'newest',
       source: 'All'
     });
     setSearch('');
   };
 
-  // Filter cars - only show AVAILABLE status
+  // Filter cars - FIXED: Don't filter out cars with null or undefined status
   const filtered = cars.filter(car => {
-    // CRITICAL: Only show cars with status "AVAILABLE"
-    if (car.status && car.status !== 'AVAILABLE') {
+    // FIX: Only filter out if status is explicitly "SOLD" or "RESERVED"
+    // Allow null, undefined, "AVAILABLE", or any other status
+    if (car.status === 'SOLD' || car.status === 'RESERVED') {
       console.log(`Filtering out ${car.make} ${car.model}: status = ${car.status}`);
       return false;
     }
     
-    // If no status field, assume it's available (for backward compatibility)
-    if (!car.status) {
-      console.log(`Car ${car.make} ${car.model} has no status field, including by default`);
-    }
-
     // Keyword search
     if (filters.keyword) {
       const kw = filters.keyword.toLowerCase();
@@ -166,8 +162,9 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     // Fuel filter
     if (filters.fuel !== 'All' && car.fuel !== filters.fuel) return false;
 
-    // Price filter
-    if (car.price && car.price > filters.maxPrice) return false;
+    // Price filter - FIX: Handle null/undefined price
+    const carPrice = car.price || 0;
+    if (carPrice > filters.maxPrice) return false;
 
     // Source filter
     if (filters.source !== 'All') {
@@ -183,8 +180,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     return (b.year || 0) - (a.year || 0);
   });
 
-  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && (!c.status || c.status === 'AVAILABLE')).length;
-  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && (!c.status || c.status === 'AVAILABLE')).length;
+  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && c.status !== 'SOLD' && c.status !== 'RESERVED').length;
+  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && c.status !== 'SOLD' && c.status !== 'RESERVED').length;
 
   return (
     <div className="inventory-page page">
@@ -305,15 +302,15 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             <input
               type="range"
               min="5000"
-              max="100000"
-              step="1000"
+              max="5000000"
+              step="10000"
               value={filters.maxPrice}
               onChange={e => setFilter('maxPrice', Number(e.target.value))}
               className="price-slider"
             />
             <div className="price-range-labels">
               <span>$5,000</span>
-              <span>$100,000</span>
+              <span>$5,000,000</span>
             </div>
           </div>
 
@@ -434,7 +431,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                       }}
                     />
                     <span className="car-badge">
-                      {car.status === 'AVAILABLE' ? 'Available' : (car.status || 'Unknown')}
+                      {car.status === 'AVAILABLE' ? 'Available' : (car.status || 'Available')}
                     </span>
                     {car.carSource === 'DEALERSHIP' && (
                       <span className="source-badge dealership">Dealership</span>
