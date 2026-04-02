@@ -11,7 +11,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://car-dealership-backend.onrender.com
+        value: https://car-dealership-backend-t44y.onrender.com
     headers:
       - path: /*
         name: Cache-Control

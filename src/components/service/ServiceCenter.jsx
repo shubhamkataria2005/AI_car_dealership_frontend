@@ -1,8 +1,7 @@
 // src/components/service/ServiceCenter.jsx
 import React, { useState, useEffect } from 'react';
 import './ServiceCenter.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { API_BASE_URL } from '../../config';
 
 const ServiceCenter = ({ user, sessionToken }) => {
   const [appointments, setAppointments] = useState([]);

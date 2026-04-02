@@ -62,19 +62,19 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
     return (
       <div className="auth-page">
         <div className="auth-panel-left">
-          <img src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=900&q=80" alt="" />
+          <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
           <div className="auth-panel-overlay" />
           <div className="auth-panel-text">
             <span className="auth-panel-eyebrow">Welcome!</span>
-            <h2>Account Created<br />Successfully</h2>
+            <h2>Account Created!</h2>
             <p>Redirecting you to your dashboard...</p>
           </div>
         </div>
         <div className="auth-panel-right" style={{ justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎉</div>
-            <h2>Welcome to Shubham's Car Dealership!</h2>
-            <p>Your account has been created. Redirecting to dashboard...</p>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>✅</div>
+            <h2>Registration Successful!</h2>
+            <p>Please wait, redirecting to dashboard.</p>
           </div>
         </div>
       </div>
@@ -83,14 +83,14 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
 
   return (
     <div className="auth-page">
-      {/* Left panel */}
+      {/* Left decorative panel */}
       <div className="auth-panel-left">
-        <img src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=900&q=80" alt="" />
+        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
         <div className="auth-panel-overlay" />
         <div className="auth-panel-text">
-          <span className="auth-panel-eyebrow">Join today</span>
-          <h2>Find your<br />perfect vehicle</h2>
-          <p>Create an account to save favourites, book test drives, and access our AI tools.</p>
+          <span className="auth-panel-eyebrow">Join the community</span>
+          <h2>Start your journey<br />with us today</h2>
+          <p>Access AI tools, save favourites, and get the best deals on your next car.</p>
         </div>
       </div>
 
@@ -103,11 +103,11 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
         <div className="auth-header">
           <div className="auth-brand">Shubham's Car Dealership</div>
           <h2>Create Account</h2>
-          <p>Free to join. No obligations.</p>
+          <p>Get access to AI tools and exclusive deals</p>
         </div>
 
         {error && <div className="auth-error">{error}</div>}
-        {success && !redirecting && <div className="auth-success">{success}</div>}
+        {success && <div className="auth-success">{success}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-field">
@@ -118,9 +118,9 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
               name="username" 
               value={formData.username} 
               onChange={handleChange} 
-              placeholder="Choose a username" 
+              placeholder="Your name" 
               required 
-              disabled={loading || success} 
+              disabled={loading} 
             />
           </div>
           <div className="form-field">
@@ -133,7 +133,7 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
               onChange={handleChange} 
               placeholder="you@email.com" 
               required 
-              disabled={loading || success} 
+              disabled={loading} 
             />
           </div>
           <div className="form-field">
@@ -144,13 +144,13 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
               name="password" 
               value={formData.password} 
               onChange={handleChange} 
-              placeholder="Create a strong password" 
+              placeholder="At least 6 characters" 
               required 
-              disabled={loading || success} 
+              disabled={loading} 
             />
           </div>
-          <button type="submit" className="auth-submit" disabled={loading || success}>
-            {loading ? 'Creating account...' : success ? 'Account Created!' : 'Create Account'}
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 

@@ -1,8 +1,7 @@
 // src/pages/admin/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { API_BASE_URL } from '../../config';
 
 const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
   const [stats, setStats] = useState(null);
@@ -373,7 +372,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     <div className="admin-table-container">
       <table className="admin-table">
         <thead>
-          植
+          <table>
             <th>ID</th>
             <th>Username</th>
             <th>Email</th>
@@ -405,7 +404,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                     {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role}
                   </span>
                 )}
-              </td>
+               </td>
               <td>
                 {userItem.role === 'SALES_EMPLOYEE' && (
                   <span className="employee-badge">Sales Employee</span>
@@ -419,7 +418,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 {userItem.role === 'USER' && (
                   <span className="regular-user-badge">Regular User</span>
                 )}
-              </td>
+               </td>
               <td>
                 {((isSuperAdmin && userItem.role !== 'SUPER_ADMIN') || 
                   (isAdmin && userItem.role === 'USER')) && userItem.id !== user?.id && (
@@ -430,8 +429,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                     Delete
                   </button>
                 )}
-              </td>
-            </tr>
+               </td>
+             </tr>
           )) : (
             <tr>
               <td colSpan="6" style={{ textAlign: 'center' }}>No users found</td>
@@ -466,18 +465,18 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               <td>
                 <strong>{car.make} {car.model}</strong>
                 {car.stockNumber && <div className="stock-number-small">Stock: {car.stockNumber}</div>}
-              </td>
+               </td>
               <td>{car.year}</td>
               <td>${car.price?.toLocaleString()}</td>
               <td>
                 <span className={`source-badge-table ${car.carSource?.toLowerCase()}`}>
                   {car.carSource === 'DEALERSHIP' ? 'Dealership' : 'Marketplace'}
                 </span>
-              </td>
+               </td>
               <td>
                 {car.sellerName}
                 <div className="seller-id-small">ID: {car.sellerId}</div>
-              </td>
+               </td>
               <td>
                 <select 
                   value={car.status} 
@@ -489,7 +488,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   <option value="PENDING">Pending</option>
                   <option value="REJECTED">Rejected</option>
                 </select>
-              </td>
+               </td>
               <td>
                 {car.carSource === 'DEALERSHIP' && (
                   <span className={`inspection-status ${car.inspectionStatus?.toLowerCase()}`}>
@@ -497,7 +496,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   </span>
                 )}
                 {car.carSource !== 'DEALERSHIP' && <span>—</span>}
-              </td>
+               </td>
               <td>
                 {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PENDING' && (
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -522,7 +521,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   <span style={{ color: '#ef4444' }}>Failed</span>
                 )}
                 {car.carSource !== 'DEALERSHIP' && <span>—</span>}
-              </td>
+               </td>
               <td>
                 <button 
                   className="delete-btn"
@@ -530,8 +529,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 >
                   Delete
                 </button>
-              </td>
-            </tr>
+               </td>
+             </tr>
           )) : (
             <tr>
               <td colSpan="10" style={{ textAlign: 'center' }}>No cars found</td>
@@ -563,11 +562,11 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               <td>
                 <strong>{msg.senderName}</strong>
                 <div className="user-id-small">ID: {msg.senderId}</div>
-              </td>
+               </td>
               <td>
                 <strong>{msg.receiverName}</strong>
                 <div className="user-id-small">ID: {msg.receiverId}</div>
-              </td>
+               </td>
               <td>{msg.carId || 'N/A'}</td>
               <td className="message-preview">{msg.content?.substring(0, 100)}...</td>
               <td>{new Date(msg.createdAt).toLocaleString()}</td>
@@ -575,8 +574,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 <span className={`status-badge ${msg.isRead ? 'read' : 'unread'}`}>
                   {msg.isRead ? 'Read' : 'Unread'}
                 </span>
-              </td>
-            </tr>
+               </td>
+             </tr>
           )) : (
             <tr>
               <td colSpan="7" style={{ textAlign: 'center' }}>No messages found</td>
@@ -614,7 +613,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 <span className={`test-drive-status ${td.status?.toLowerCase()}`}>
                   {td.status}
                 </span>
-              </td>
+               </td>
               <td className="notes-preview">{td.notes?.substring(0, 50)}...</td>
               <td>
                 {td.status === 'SCHEDULED' && (
@@ -647,8 +646,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                 {td.status === 'CANCELLED' && (
                   <span style={{ color: '#ef4444' }}>Cancelled</span>
                 )}
-              </td>
-            </tr>
+               </td>
+             </tr>
           )) : (
             <tr>
               <td colSpan="8" style={{ textAlign: 'center' }}>No test drives found</td>
@@ -673,8 +672,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             <th>Est. Value</th>
             <th>Status</th>
             <th>Actions</th>
-          </tr>
-        </thead>
+          </thead>
         <tbody>
           {tradeIns.length > 0 ? tradeIns.map(ti => (
             <tr key={ti.id}>

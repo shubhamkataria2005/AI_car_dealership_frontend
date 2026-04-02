@@ -7,8 +7,7 @@ import FinanceCalculator from '../../components/tools/FinanceCalculator';
 import MessagesInbox from '../../components/messaging/MessagesInbox';
 import ServiceCenter from '../../components/service/ServiceCenter';
 import TradeInCalculator from '../../components/tools/TradeInCalculator';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { API_BASE_URL } from '../../config';
 
 const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   const [activeTool, setActiveTool] = useState('chat');
@@ -60,12 +59,12 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   };
 
   const tools = [
-    { id: 'messages', label: 'Messages', icon: '', desc: 'Inbox & conversations' },
-    { id: 'service', label: 'Service Center', icon: '', desc: 'Book test drives & service' },
-    { id: 'tradein', label: 'Trade-In', icon: '', desc: 'Trade your car for a new one' },
-    { id: 'chat', label: 'AI Assistant', icon: '', desc: 'Chat about cars & buying' },
-    { id: 'recognizer', label: 'Car Recognizer', icon: '', desc: 'Identify car brand from photo' },
-    { id: 'finance', label: 'Finance Calculator', icon: '', desc: 'Estimate monthly payments' },
+    { id: 'messages', label: 'Messages', icon: '💬', desc: 'Inbox & conversations' },
+    { id: 'service', label: 'Service Center', icon: '🔧', desc: 'Book test drives & service' },
+    { id: 'tradein', label: 'Trade-In', icon: '🔄', desc: 'Trade your car for a new one' },
+    { id: 'chat', label: 'AI Assistant', icon: '🤖', desc: 'Chat about cars & buying' },
+    { id: 'recognizer', label: 'Car Recognizer', icon: '📸', desc: 'Identify car brand from photo' },
+    { id: 'finance', label: 'Finance Calculator', icon: '💰', desc: 'Estimate monthly payments' },
   ];
 
   const handleToolClick = (id) => {
