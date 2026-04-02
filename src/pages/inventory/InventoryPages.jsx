@@ -20,7 +20,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   });
   const [search, setSearch] = useState('');
 
-  // Apply any filters passed in from home page search
   useEffect(() => {
     if (locationFilters?.filters) {
       const incoming = locationFilters.filters;
@@ -40,7 +39,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     }
   }, [locationFilters]);
 
-  // Fetch cars
   const fetchCars = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -71,15 +69,20 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
       if (data && data.success && Array.isArray(data.cars)) {
         console.log('Cars array length:', data.cars.length);
-        console.log('First car:', data.cars[0]);
-        setDebugInfo(prev => `${prev}\nCars found: ${data.cars.length}`);
         
-        // Log each car's status
-        data.cars.forEach((car, index) => {
-          console.log(`Car ${index + 1}: ${car.make} ${car.model} - Status: ${car.status}, Source: ${car.carSource}`);
-        });
-        
-        setCars(data.cars);
+        if (data.cars.length === 0) {
+          setDebugInfo(prev => `${prev}\nNo cars found in database!`);
+          setError('No cars available in inventory yet.');
+          setCars([]);
+        } else {
+          // Log each car's status for debugging
+          data.cars.forEach((car, index) => {
+            console.log(`Car ${index + 1}: ${car.make} ${car.model} - Status: ${car.status}, Source: ${car.carSource}`);
+          });
+          
+          setCars(data.cars);
+          setDebugInfo(prev => `${prev}\nCars found: ${data.cars.length}`);
+        }
       } else {
         console.error('Unexpected response format:', data);
         setDebugInfo(prev => `${prev}\nUnexpected response format: ${JSON.stringify(data)}`);
@@ -120,32 +123,37 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     setSearch('');
   };
 
-  // Filter cars
+  // Filter cars - only show AVAILABLE status
   const filtered = cars.filter(car => {
-    // Skip if car status is not AVAILABLE
+    // CRITICAL: Only show cars with status "AVAILABLE"
     if (car.status && car.status !== 'AVAILABLE') {
       console.log(`Filtering out ${car.make} ${car.model}: status = ${car.status}`);
       return false;
+    }
+    
+    // If no status field, assume it's available (for backward compatibility)
+    if (!car.status) {
+      console.log(`Car ${car.make} ${car.model} has no status field, including by default`);
     }
 
     // Keyword search
     if (filters.keyword) {
       const kw = filters.keyword.toLowerCase();
-      const matchesKw =
-        (car.make?.toLowerCase() || '').includes(kw) ||
-        (car.model?.toLowerCase() || '').includes(kw) ||
-        (car.year?.toString() || '').includes(kw) ||
-        (car.description?.toLowerCase() || '').includes(kw);
+      const matchesKw = 
+        (car.make || '').toLowerCase().includes(kw) ||
+        (car.model || '').toLowerCase().includes(kw) ||
+        (car.year || '').toString().includes(kw) ||
+        (car.description || '').toLowerCase().includes(kw);
       if (!matchesKw) return false;
     }
 
     // Quick search
     if (search) {
       const s = search.toLowerCase();
-      const matchesSearch =
-        (car.make?.toLowerCase() || '').includes(s) ||
-        (car.model?.toLowerCase() || '').includes(s) ||
-        (car.year?.toString() || '').includes(s);
+      const matchesSearch = 
+        (car.make || '').toLowerCase().includes(s) ||
+        (car.model || '').toLowerCase().includes(s) ||
+        (car.year || '').toString().includes(s);
       if (!matchesSearch) return false;
     }
 
@@ -175,8 +183,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     return (b.year || 0) - (a.year || 0);
   });
 
-  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && c.status === 'AVAILABLE').length;
-  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && c.status === 'AVAILABLE').length;
+  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && (!c.status || c.status === 'AVAILABLE')).length;
+  const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && (!c.status || c.status === 'AVAILABLE')).length;
 
   return (
     <div className="inventory-page page">
@@ -209,7 +217,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
       <div className="inventory-layout container">
 
-        {/* Sidebar Filters */}
         <aside className="filters-sidebar">
           <h3>Filter Cars</h3>
 
@@ -315,7 +322,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
           </button>
         </aside>
 
-        {/* Main Content */}
         <div className="inventory-main">
           <div className="inventory-toolbar">
             <span className="results-count">
@@ -336,25 +342,26 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </select>
           </div>
 
-          {/* Debug Info (remove after fixing) */}
-          {debugInfo && process.env.NODE_ENV === 'development' && (
+          {/* Debug Panel - Remove after fixing */}
+          {debugInfo && (
             <div style={{
-              background: '#f0f0f0',
-              border: '1px solid #ccc',
+              background: '#f5f5f5',
+              border: '1px solid #ddd',
               borderRadius: '4px',
               padding: '10px',
               marginBottom: '16px',
-              fontSize: '12px',
+              fontSize: '11px',
               fontFamily: 'monospace',
               whiteSpace: 'pre-wrap',
-              wordBreak: 'break-all'
+              wordBreak: 'break-all',
+              maxHeight: '200px',
+              overflow: 'auto'
             }}>
               <strong>Debug Info:</strong>
-              <pre style={{ margin: '5px 0 0 0', overflow: 'auto' }}>{debugInfo}</pre>
+              <pre style={{ margin: '5px 0 0 0' }}>{debugInfo}</pre>
             </div>
           )}
 
-          {/* Error state */}
           {error && !loading && (
             <div className="no-results">
               <span>⚠️</span>
@@ -366,7 +373,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </div>
           )}
 
-          {/* Loading state */}
           {loading && (
             <div className="no-results">
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px' }}>
@@ -389,7 +395,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </div>
           )}
 
-          {/* No results after load */}
           {!loading && !error && cars.length > 0 && filtered.length === 0 && (
             <div className="no-results">
               <span>🔍</span>
@@ -401,7 +406,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </div>
           )}
 
-          {/* Empty database */}
           {!loading && !error && cars.length === 0 && (
             <div className="no-results">
               <span>🚗</span>
@@ -413,7 +417,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </div>
           )}
 
-          {/* Car grid */}
           {!loading && filtered.length > 0 && (
             <div className="inventory-grid">
               {filtered.map(car => (
@@ -431,7 +434,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                       }}
                     />
                     <span className="car-badge">
-                      {car.status === 'AVAILABLE' ? 'Available' : car.status || 'Unknown'}
+                      {car.status === 'AVAILABLE' ? 'Available' : (car.status || 'Unknown')}
                     </span>
                     {car.carSource === 'DEALERSHIP' && (
                       <span className="source-badge dealership">Dealership</span>
