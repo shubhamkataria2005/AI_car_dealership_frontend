@@ -1,10 +1,24 @@
 // src/services/api.jsx
 import { API_BASE_URL } from '../config';
 
+// Helper: fetch with a timeout so we don't hang forever on a sleeping Render server
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 30000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+};
+
 export const api = {
-  // Auth endpoints
+  // ── Auth ──────────────────────────────────────────────────────────────
   async login(email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -13,7 +27,7 @@ export const api = {
   },
 
   async register(username, email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password })
@@ -21,29 +35,33 @@ export const api = {
     return await response.json();
   },
 
-  // Car endpoints
+  // ── Cars ──────────────────────────────────────────────────────────────
   async getAllCars() {
-    const response = await fetch(`${API_BASE_URL}/api/cars/all`);
-    return await response.json();
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/all`, {}, 30000);
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
   },
 
   async getDealershipInventory() {
-    const response = await fetch(`${API_BASE_URL}/api/cars/dealership/inventory`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/dealership/inventory`);
     return await response.json();
   },
 
   async getMarketplaceListings() {
-    const response = await fetch(`${API_BASE_URL}/api/cars/marketplace/listings`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/marketplace/listings`);
     return await response.json();
   },
 
   async getCarById(id) {
-    const response = await fetch(`${API_BASE_URL}/api/cars/${id}`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/${id}`);
     return await response.json();
   },
 
   async listCar(carData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/cars/list`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/list`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +73,7 @@ export const api = {
   },
 
   async addDealershipCar(carData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/cars/dealership/add`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/dealership/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,13 +86,13 @@ export const api = {
 
   async searchCars(params) {
     const queryParams = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_BASE_URL}/api/cars/search?${queryParams}`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/cars/search?${queryParams}`);
     return await response.json();
   },
 
-  // Message endpoints
+  // ── Messages ──────────────────────────────────────────────────────────
   async sendMessage(messageData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/messages/send`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/messages/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,33 +104,33 @@ export const api = {
   },
 
   async getConversation(otherUserId, token) {
-    const response = await fetch(`${API_BASE_URL}/api/messages/conversation/${otherUserId}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/messages/conversation/${otherUserId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async getInbox(token) {
-    const response = await fetch(`${API_BASE_URL}/api/messages/inbox`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/messages/inbox`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async getUnreadCount(token) {
-    const response = await fetch(`${API_BASE_URL}/api/messages/unread-count`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/messages/unread-count`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
-  // Trade-in endpoints
+  // ── Trade-In ──────────────────────────────────────────────────────────
   async getTradeInEstimate(tradeInData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/estimate`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/estimate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : undefined
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify(tradeInData)
     });
@@ -120,7 +138,7 @@ export const api = {
   },
 
   async submitTradeIn(tradeInData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/request`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,15 +150,15 @@ export const api = {
   },
 
   async getUserTradeIns(token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/my-trade-ins`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/my-trade-ins`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
-  // Service appointments
+  // ── Service Appointments ──────────────────────────────────────────────
   async bookAppointment(appointmentData, token) {
-    const response = await fetch(`${API_BASE_URL}/api/service/book`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/service/book`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -152,82 +170,66 @@ export const api = {
   },
 
   async getUserAppointments(token) {
-    const response = await fetch(`${API_BASE_URL}/api/service/my-appointments`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/service/my-appointments`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
-  // AI Assistant
+  // ── AI Assistant ──────────────────────────────────────────────────────
   async chatWithAI(message) {
-    const response = await fetch(`${API_BASE_URL}/api/ai-assistant/chat`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/ai-assistant/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message })
-    });
+    }, 60000); // longer timeout for AI
     return await response.json();
   },
 
-  // ========== CAR RECOGNITION ENDPOINTS ==========
-  
-  /**
-   * Recognize car brand from image
-   * @param {File} imageFile - The image file to analyze
-   * @param {string} token - JWT token for authentication (optional)
-   * @returns {Promise} - Recognition result
-   */
+  // ── Car Recognition ───────────────────────────────────────────────────
   async recognizeCar(imageFile, token) {
     const formData = new FormData();
     formData.append('image', imageFile);
-    
+
     const headers = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`${API_BASE_URL}/api/car-recognition/predict`, {
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/car-recognition/predict`, {
       method: 'POST',
       headers,
       body: formData
-    });
-    
+    }, 30000);
+
     return await response.json();
   },
-  
-  /**
-   * Check car recognition server status
-   * @param {string} token - JWT token for authentication (optional)
-   * @returns {Promise} - Status object with server availability
-   */
+
   async getRecognitionStatus(token) {
     const headers = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`${API_BASE_URL}/api/car-recognition/status`, {
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/car-recognition/status`, {
       headers
     });
     return await response.json();
   },
 
-  // Admin endpoints
+  // ── Admin ─────────────────────────────────────────────────────────────
   async getAdminStats(token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/stats`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async getAllUsers(token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/users`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async updateUserRole(userId, role, token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -239,7 +241,7 @@ export const api = {
   },
 
   async deleteUser(userId, token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/users/${userId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -247,14 +249,14 @@ export const api = {
   },
 
   async getAllCarsAdmin(token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/cars`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/cars`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async updateCarStatus(carId, status, token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/cars/${carId}/status`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/cars/${carId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -266,7 +268,7 @@ export const api = {
   },
 
   async updateCarInspection(carId, inspectionStatus, token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/cars/${carId}/inspection`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/cars/${carId}/inspection`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -278,7 +280,7 @@ export const api = {
   },
 
   async deleteCar(carId, token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/cars/${carId}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/cars/${carId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -286,21 +288,21 @@ export const api = {
   },
 
   async getAllMessages(token) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/messages`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/admin/messages`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async getAllTestDrives(token) {
-    const response = await fetch(`${API_BASE_URL}/api/test-drives/all`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/test-drives/all`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async updateTestDriveStatus(appointmentId, action, token) {
-    const response = await fetch(`${API_BASE_URL}/api/test-drives/${appointmentId}/${action}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/test-drives/${appointmentId}/${action}`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -308,14 +310,14 @@ export const api = {
   },
 
   async getPendingTradeIns(token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/admin/pending`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/admin/pending`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return await response.json();
   },
 
   async approveTradeIn(tradeInId, finalValue, token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/admin/${tradeInId}/approve`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/admin/${tradeInId}/approve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -327,7 +329,7 @@ export const api = {
   },
 
   async rejectTradeIn(tradeInId, reason, token) {
-    const response = await fetch(`${API_BASE_URL}/api/trade-in/admin/${tradeInId}/reject`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/trade-in/admin/${tradeInId}/reject`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

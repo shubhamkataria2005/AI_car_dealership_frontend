@@ -19,6 +19,7 @@ function App() {
   const [sessionToken, setSessionToken] = useState(null);
   const [currentCar, setCurrentCar] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
+  const [locationFilters, setLocationFilters] = useState(null); // FIX: store filters for inventory
 
   const handleNavigate = (page, data = null) => {
     setCurrentPage(page);
@@ -28,10 +29,13 @@ function App() {
     if (data && page === 'checkout') {
       setCurrentCar(data);
     }
+    // FIX: capture filter data when navigating to inventory
+    if (page === 'inventory') {
+      setLocationFilters(data || null);
+    }
   };
 
   const handleLoginSuccess = (userData, token) => {
-    console.log('Login success, setting user and navigating to dashboard');
     setUser(userData);
     setSessionToken(token);
     localStorage.setItem('token', token);
@@ -40,7 +44,6 @@ function App() {
   };
 
   const handleLogout = () => {
-    console.log('Logging out');
     setUser(null);
     setSessionToken(null);
     localStorage.removeItem('token');
@@ -52,7 +55,6 @@ function App() {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
-      console.log('Found stored session, restoring user');
       setSessionToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
@@ -60,11 +62,12 @@ function App() {
 
   return (
     <Router>
-      <AppContent 
+      <AppContent
         user={user}
         sessionToken={sessionToken}
         currentPage={currentPage}
         currentCar={currentCar}
+        locationFilters={locationFilters}
         onNavigate={handleNavigate}
         onLoginSuccess={handleLoginSuccess}
         onLogout={handleLogout}
@@ -73,7 +76,7 @@ function App() {
   );
 }
 
-function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, onLoginSuccess, onLogout }) {
+function AppContent({ user, sessionToken, currentPage, currentCar, locationFilters, onNavigate, onLoginSuccess, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -101,8 +104,7 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
   }, [location.pathname]);
 
   useEffect(() => {
-    console.log('Current page changed to:', currentPage);
-    switch(currentPage) {
+    switch (currentPage) {
       case 'home':
         if (location.pathname !== '/') navigate('/');
         break;
@@ -138,83 +140,92 @@ function AppContent({ user, sessionToken, currentPage, currentCar, onNavigate, o
   }, [currentPage, currentCar, navigate, location.pathname]);
 
   const handleNavigateWrapper = (page, data = null) => {
-    console.log('Navigating to:', page);
     onNavigate(page, data);
   };
 
   if ((currentPage === 'dashboard' || currentPage === 'admin') && !user) {
-    console.log('Protected route: redirecting to login');
     setTimeout(() => handleNavigateWrapper('login'), 0);
     return null;
   }
 
   return (
     <div className="App">
-      <Navbar 
-        user={user} 
+      <Navbar
+        user={user}
         currentPage={currentPage}
-        onNavigate={handleNavigateWrapper} 
-        onLogout={onLogout} 
+        onNavigate={handleNavigateWrapper}
+        onLogout={onLogout}
       />
       <main className="main-content">
         <Routes>
           <Route path="/" element={<HomePage onNavigate={handleNavigateWrapper} />} />
-          <Route path="/inventory" element={<InventoryPage onNavigate={handleNavigateWrapper} />} />
-          <Route 
-            path="/car/:id" 
+
+          {/* FIX: pass locationFilters to InventoryPage */}
+          <Route
+            path="/inventory"
             element={
-              <CarDetailPage 
-                car={currentCar} 
-                user={user} 
-                sessionToken={sessionToken}
-                onNavigate={handleNavigateWrapper} 
+              <InventoryPage
+                onNavigate={handleNavigateWrapper}
+                locationFilters={locationFilters}
               />
-            } 
+            }
           />
-          <Route 
-            path="/checkout" 
+
+          <Route
+            path="/car/:id"
             element={
-              <CheckoutPage 
+              <CarDetailPage
                 car={currentCar}
                 user={user}
                 sessionToken={sessionToken}
                 onNavigate={handleNavigateWrapper}
               />
-            } 
+            }
           />
-          <Route 
-            path="/purchase-success" 
+          <Route
+            path="/checkout"
             element={
-              <PurchaseSuccessPage 
+              <CheckoutPage
+                car={currentCar}
+                user={user}
+                sessionToken={sessionToken}
                 onNavigate={handleNavigateWrapper}
               />
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/purchase-success"
             element={
-              user ? 
-                <DashboardPage 
-                  user={user} 
-                  sessionToken={sessionToken}
-                  onLogout={onLogout} 
-                  onNavigate={handleNavigateWrapper} 
-                /> : 
-                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
-            } 
+              <PurchaseSuccessPage
+                onNavigate={handleNavigateWrapper}
+              />
+            }
           />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/dashboard"
             element={
-              user ? 
-                <AdminDashboard 
-                  user={user} 
+              user ?
+                <DashboardPage
+                  user={user}
                   sessionToken={sessionToken}
-                  onLogout={onLogout} 
-                  onNavigate={handleNavigateWrapper} 
-                /> : 
+                  onLogout={onLogout}
+                  onNavigate={handleNavigateWrapper}
+                /> :
                 <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
-            } 
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              user ?
+                <AdminDashboard
+                  user={user}
+                  sessionToken={sessionToken}
+                  onLogout={onLogout}
+                  onNavigate={handleNavigateWrapper}
+                /> :
+                <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
+            }
           />
           <Route path="/login" element={<LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
           <Route path="/register" element={<RegisterPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
