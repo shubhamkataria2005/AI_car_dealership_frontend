@@ -49,7 +49,6 @@ const HomePage = ({ onNavigate }) => {
 
   const displayedCars = getDisplayedCars();
 
-  // Navigate to inventory with filters from the search bar
   const handleSearch = () => {
     const keyword = document.getElementById('search-keyword')?.value || '';
     const make = document.getElementById('search-make')?.value || '';
@@ -60,7 +59,6 @@ const HomePage = ({ onNavigate }) => {
     if (activePlatform === 'marketplace') source = 'MARKETPLACE';
     if (activePlatform === 'dealership') source = 'DEALERSHIP';
 
-    // Build filters object — only include non-empty values
     const filters = {};
     if (keyword) filters.keyword = keyword;
     if (make) filters.make = make;
@@ -68,14 +66,12 @@ const HomePage = ({ onNavigate }) => {
     if (bodyType) filters.bodyType = bodyType;
     if (source) filters.source = source;
 
-    // Navigate to inventory and pass the filters
     onNavigate('inventory', { filters });
   };
 
   return (
     <div className="home-page page">
 
-      {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-content">
@@ -122,7 +118,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── Platform Selector ── */}
       <section className="platform-selector-section">
         <div className="container">
           <div className="platform-tabs">
@@ -148,7 +143,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── Search Bar ── */}
       <section className="search-section">
         <div className="container">
           <div className="search-bar-home">
@@ -182,6 +176,9 @@ const HomePage = ({ onNavigate }) => {
                 <option>BMW</option>
                 <option>Mercedes</option>
                 <option>Audi</option>
+                <option>Ferrari</option>
+                <option>Lamborghini</option>
+                <option>Porsche</option>
               </select>
             </div>
             <div className="search-field">
@@ -193,6 +190,9 @@ const HomePage = ({ onNavigate }) => {
                 <option value="40000">Under $40,000</option>
                 <option value="60000">Under $60,000</option>
                 <option value="100000">Under $100,000</option>
+                <option value="500000">Under $500,000</option>
+                <option value="1000000">Under $1,000,000</option>
+                <option value="5000000">Under $5,000,000</option>
               </select>
             </div>
             <div className="search-field">
@@ -215,7 +215,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── Featured Cars ── */}
       <section className="featured-section">
         <div className="container">
           <div className="section-header">
@@ -234,7 +233,6 @@ const HomePage = ({ onNavigate }) => {
             </button>
           </div>
 
-          {/* Error banner */}
           {error && !loading && (
             <div style={{
               background: '#fef3c7',
@@ -267,7 +265,6 @@ const HomePage = ({ onNavigate }) => {
 
           <div className="cars-grid">
             {loading ? (
-              // Skeleton loading cards
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="car-card" style={{ cursor: 'default' }}>
                   <div
@@ -347,7 +344,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── Why Us ── */}
       <section className="why-us">
         <div className="container">
           <div className="why-us-header">
@@ -381,7 +377,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ── CTA ── */}
       <section className="cta-section">
         <div className="container">
           <div className="cta-box">
