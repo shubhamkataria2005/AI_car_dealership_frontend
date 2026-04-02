@@ -7,7 +7,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
+  const [debugInfo, setDebugInfo] = useState('');
 
   const [filters, setFilters] = useState({
     keyword: '',
@@ -40,56 +40,64 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     }
   }, [locationFilters]);
 
-  // Fetch cars with retry logic for Render cold starts
-  const fetchCars = useCallback(async (attempt = 0) => {
+  // Fetch cars
+  const fetchCars = useCallback(async () => {
     setLoading(true);
     setError('');
+    setDebugInfo('Fetching cars...');
 
     try {
-      console.log('Fetching cars from:', `${API_BASE_URL}/api/cars/all`);
-      const response = await fetch(`${API_BASE_URL}/api/cars/all`, {
-        signal: AbortSignal.timeout(30000)
+      const url = `${API_BASE_URL}/api/cars/all`;
+      console.log('Fetching from URL:', url);
+      setDebugInfo(`Fetching from: ${url}`);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
       });
+
+      console.log('Response status:', response.status);
+      setDebugInfo(prev => `${prev}\nResponse status: ${response.status}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('Fetched cars data:', data);
+      console.log('Full API response:', data);
+      setDebugInfo(prev => `${prev}\nData received: ${JSON.stringify(data).substring(0, 500)}`);
 
       if (data && data.success && Array.isArray(data.cars)) {
+        console.log('Cars array length:', data.cars.length);
+        console.log('First car:', data.cars[0]);
+        setDebugInfo(prev => `${prev}\nCars found: ${data.cars.length}`);
+        
+        // Log each car's status
+        data.cars.forEach((car, index) => {
+          console.log(`Car ${index + 1}: ${car.make} ${car.model} - Status: ${car.status}, Source: ${car.carSource}`);
+        });
+        
         setCars(data.cars);
-        setError('');
       } else {
-        console.error('Unexpected API response:', data);
-        setError('Received unexpected data from server. Please try again.');
+        console.error('Unexpected response format:', data);
+        setDebugInfo(prev => `${prev}\nUnexpected response format: ${JSON.stringify(data)}`);
+        setError('Received unexpected data format from server');
         setCars([]);
       }
     } catch (err) {
-      console.error('Failed to fetch cars (attempt ' + (attempt + 1) + '):', err);
-
-      if (err.name === 'TimeoutError' || err.message.includes('timeout')) {
-        setError('Request timeout - server may be starting up. Retrying...');
-        if (attempt < 2) {
-          setTimeout(() => fetchCars(attempt + 1), 5000);
-        }
-      } else if (attempt < 2) {
-        setError(`Connection issue. Retrying... (${attempt + 1}/3)`);
-        setTimeout(() => fetchCars(attempt + 1), 5000);
-      } else {
-        setError('Could not connect to the server. Please refresh the page.');
-        setCars([]);
-      }
+      console.error('Fetch error:', err);
+      setDebugInfo(prev => `${prev}\nError: ${err.message}`);
+      setError(`Failed to load cars: ${err.message}`);
+      setCars([]);
     } finally {
-      if (!error || error.includes('Retrying')) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchCars(0);
+    fetchCars();
   }, [fetchCars]);
 
   const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Hyundai', 'Kia', 'Volkswagen'];
@@ -112,60 +120,60 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
     setSearch('');
   };
 
-  // Client-side filtering
-  const filtered = cars
-    .filter(car => {
-      // Only show available cars
-      if (car.status && car.status !== 'AVAILABLE') return false;
+  // Filter cars
+  const filtered = cars.filter(car => {
+    // Skip if car status is not AVAILABLE
+    if (car.status && car.status !== 'AVAILABLE') {
+      console.log(`Filtering out ${car.make} ${car.model}: status = ${car.status}`);
+      return false;
+    }
 
-      // Keyword search across make, model, year, description
-      if (filters.keyword) {
-        const kw = filters.keyword.toLowerCase();
-        const matchesKw =
-          car.make?.toLowerCase().includes(kw) ||
-          car.model?.toLowerCase().includes(kw) ||
-          car.year?.toString().includes(kw) ||
-          (car.description && car.description.toLowerCase().includes(kw));
-        if (!matchesKw) return false;
-      }
+    // Keyword search
+    if (filters.keyword) {
+      const kw = filters.keyword.toLowerCase();
+      const matchesKw =
+        (car.make?.toLowerCase() || '').includes(kw) ||
+        (car.model?.toLowerCase() || '').includes(kw) ||
+        (car.year?.toString() || '').includes(kw) ||
+        (car.description?.toLowerCase() || '').includes(kw);
+      if (!matchesKw) return false;
+    }
 
-      // Quick search box
-      if (search) {
-        const s = search.toLowerCase();
-        const matchesSearch =
-          car.make?.toLowerCase().includes(s) ||
-          car.model?.toLowerCase().includes(s) ||
-          car.year?.toString().includes(s);
-        if (!matchesSearch) return false;
-      }
+    // Quick search
+    if (search) {
+      const s = search.toLowerCase();
+      const matchesSearch =
+        (car.make?.toLowerCase() || '').includes(s) ||
+        (car.model?.toLowerCase() || '').includes(s) ||
+        (car.year?.toString() || '').includes(s);
+      if (!matchesSearch) return false;
+    }
 
-      // Make filter
-      if (filters.make !== 'All' && car.make !== filters.make) return false;
+    // Make filter
+    if (filters.make !== 'All' && car.make !== filters.make) return false;
 
-      // Body type filter
-      if (filters.body !== 'All' && car.bodyType !== filters.body) return false;
+    // Body type filter
+    if (filters.body !== 'All' && car.bodyType !== filters.body) return false;
 
-      // Fuel filter
-      if (filters.fuel !== 'All' && car.fuel !== filters.fuel) return false;
+    // Fuel filter
+    if (filters.fuel !== 'All' && car.fuel !== filters.fuel) return false;
 
-      // Price filter
-      if (car.price && car.price > filters.maxPrice) return false;
+    // Price filter
+    if (car.price && car.price > filters.maxPrice) return false;
 
-      // Source filter
-      if (filters.source !== 'All') {
-        const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
-        if (car.carSource !== expectedSource) return false;
-      }
+    // Source filter
+    if (filters.source !== 'All') {
+      const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
+      if (car.carSource !== expectedSource) return false;
+    }
 
-      return true;
-    })
-    .sort((a, b) => {
-      if (filters.sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
-      if (filters.sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
-      if (filters.sortBy === 'mileage') return (a.mileage || 0) - (b.mileage || 0);
-      // Default: newest first by year
-      return (b.year || 0) - (a.year || 0);
-    });
+    return true;
+  }).sort((a, b) => {
+    if (filters.sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
+    if (filters.sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
+    if (filters.sortBy === 'mileage') return (a.mileage || 0) - (b.mileage || 0);
+    return (b.year || 0) - (a.year || 0);
+  });
 
   const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE' && c.status === 'AVAILABLE').length;
   const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP' && c.status === 'AVAILABLE').length;
@@ -212,15 +220,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               placeholder="Make, model, year, keyword..."
               value={filters.keyword}
               onChange={e => setFilter('keyword', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                border: '1px solid var(--gray-lighter)',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '14px',
-                background: 'var(--cream)',
-                boxSizing: 'border-box',
-              }}
             />
           </div>
 
@@ -337,41 +336,31 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
             </select>
           </div>
 
+          {/* Debug Info (remove after fixing) */}
+          {debugInfo && process.env.NODE_ENV === 'development' && (
+            <div style={{
+              background: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              padding: '10px',
+              marginBottom: '16px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all'
+            }}>
+              <strong>Debug Info:</strong>
+              <pre style={{ margin: '5px 0 0 0', overflow: 'auto' }}>{debugInfo}</pre>
+            </div>
+          )}
+
           {/* Error state */}
           {error && !loading && (
-            <div style={{
-              background: '#fef3c7',
-              border: '1px solid #f59e0b',
-              borderLeft: '4px solid #f59e0b',
-              borderRadius: 'var(--radius)',
-              padding: '16px 20px',
-              marginBottom: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '16px',
-            }}>
-              <div>
-                <strong style={{ color: '#92400e', display: 'block', marginBottom: '4px' }}>
-                  Connection Issue
-                </strong>
-                <p style={{ color: '#92400e', fontSize: '14px', margin: 0 }}>{error}</p>
-              </div>
-              <button
-                onClick={() => fetchCars(0)}
-                style={{
-                  padding: '8px 16px',
-                  background: '#92400e',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
-              >
+            <div className="no-results">
+              <span>⚠️</span>
+              <h3>Error Loading Cars</h3>
+              <p>{error}</p>
+              <button onClick={fetchCars} className="reset-filters" style={{ marginTop: '16px' }}>
                 Retry
               </button>
             </div>
@@ -380,13 +369,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
           {/* Loading state */}
           {loading && (
             <div className="no-results">
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '16px',
-                padding: '40px',
-              }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px' }}>
                 <div style={{
                   width: '48px',
                   height: '48px',
@@ -395,9 +378,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite',
                 }} />
-                <p style={{ color: 'var(--gray-dark)', fontSize: '15px' }}>
-                  Loading vehicles...
-                </p>
+                <p>Loading vehicles...</p>
               </div>
               <style>{`
                 @keyframes spin {
@@ -414,11 +395,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               <span>🔍</span>
               <h3>No cars match your filters</h3>
               <p>Try different keywords or adjust your filters</p>
-              <button
-                className="reset-filters"
-                onClick={resetFilters}
-                style={{ marginTop: '16px', width: 'auto', padding: '10px 24px' }}
-              >
+              <button className="reset-filters" onClick={resetFilters} style={{ marginTop: '16px', width: 'auto', padding: '10px 24px' }}>
                 Clear All Filters
               </button>
             </div>
@@ -430,20 +407,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               <span>🚗</span>
               <h3>No vehicles in inventory yet</h3>
               <p>Check back soon — new cars are added regularly!</p>
-              <button
-                onClick={() => fetchCars(0)}
-                style={{
-                  marginTop: '16px',
-                  padding: '10px 24px',
-                  background: 'var(--black)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  fontSize: '13px',
-                }}
-              >
+              <button onClick={fetchCars} style={{ marginTop: '16px', padding: '10px 24px', background: 'var(--black)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
                 Refresh
               </button>
             </div>
@@ -467,7 +431,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                       }}
                     />
                     <span className="car-badge">
-                      {car.status === 'AVAILABLE' ? 'Available' : car.status}
+                      {car.status === 'AVAILABLE' ? 'Available' : car.status || 'Unknown'}
                     </span>
                     {car.carSource === 'DEALERSHIP' && (
                       <span className="source-badge dealership">Dealership</span>
