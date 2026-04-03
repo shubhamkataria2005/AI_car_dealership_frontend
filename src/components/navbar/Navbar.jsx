@@ -1,9 +1,16 @@
 // src/components/navbar/Navbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 
 const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const navLinks = [
     { label: 'Home',      page: 'home'      },
@@ -16,12 +23,11 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
       <div className="navbar-inner">
 
         <button className="navbar-logo" onClick={() => handleNavigate('home')}>
-          <span className="logo-icon"></span>
-          <span className="logo-text">Shubham's Car Dealership</span>
+          <span className="logo-text"><span>Shubham's Car Dealership</span></span>
         </button>
 
         <ul className="navbar-links">
@@ -35,30 +41,33 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
               </button>
             </li>
           ))}
-        </ul>
-
-        <div className="navbar-auth">
-          {user ? (
-            <>
+          {user && (
+            <li>
               <button
                 className={`nav-link ${currentPage === 'dashboard' ? 'active' : ''}`}
                 onClick={() => handleNavigate('dashboard')}
               >
                 Dashboard
               </button>
+            </li>
+          )}
+        </ul>
+
+        <div className="navbar-auth">
+          {user ? (
+            <>
               <span className="nav-username">Hi, {user.username}</span>
-              <button className="btn-logout" onClick={() => {
-                onLogout();
-                setMenuOpen(false);
-              }}>Logout</button>
+              <button className="btn-logout" onClick={() => { onLogout(); setMenuOpen(false); }}>
+                Logout
+              </button>
             </>
           ) : (
             <>
               <button className="btn-nav-login" onClick={() => handleNavigate('login')}>
-                Login
+                Sign In
               </button>
               <button className="btn-nav-register" onClick={() => handleNavigate('register')}>
-                Register
+                Get Started
               </button>
             </>
           )}
@@ -69,9 +78,7 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span>
         </button>
       </div>
 
@@ -86,39 +93,15 @@ const Navbar = ({ user, currentPage, onNavigate, onLogout }) => {
               {link.label}
             </button>
           ))}
-
           {user ? (
             <>
-              <button
-                className="mobile-link"
-                onClick={() => handleNavigate('dashboard')}
-              >
-                Dashboard
-              </button>
-              <button
-                className="mobile-link mobile-logout"
-                onClick={() => {
-                  onLogout();
-                  setMenuOpen(false);
-                }}
-              >
-                Logout
-              </button>
+              <button className="mobile-link" onClick={() => handleNavigate('dashboard')}>Dashboard</button>
+              <button className="mobile-link mobile-logout" onClick={() => { onLogout(); setMenuOpen(false); }}>Logout</button>
             </>
           ) : (
             <>
-              <button
-                className="mobile-link"
-                onClick={() => handleNavigate('login')}
-              >
-                Login
-              </button>
-              <button
-                className="mobile-link"
-                onClick={() => handleNavigate('register')}
-              >
-                Register
-              </button>
+              <button className="mobile-link" onClick={() => handleNavigate('login')}>Sign In</button>
+              <button className="mobile-link" onClick={() => handleNavigate('register')}>Get Started</button>
             </>
           )}
         </div>
