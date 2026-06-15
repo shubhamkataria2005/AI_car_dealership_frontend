@@ -1,167 +1,191 @@
+// src/components/messaging/MessagesInbox.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { API_BASE_URL } from '../../config';
 import './MessagesInbox.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
 const MessagesInbox = ({ user, sessionToken }) => {
-  const [conversations,    setConversations]    = useState([]);
-  const [activeConvo,      setActiveConvo]      = useState(null); // { otherUserId, otherUsername }
-  const [messages,         setMessages]         = useState([]);
-  const [newMessage,       setNewMessage]       = useState('');
-  const [loadingInbox,     setLoadingInbox]     = useState(true);
-  const [loadingMessages,  setLoadingMessages]  = useState(false);
-  const [sending,          setSending]          = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [activeConvo, setActiveConvo] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputText, setInputText] = useState('');
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const stompClient = useRef(null);
   const messagesEndRef = useRef(null);
+  const activeConvoRef = useRef(null);
 
   const token = sessionToken || localStorage.getItem('token');
-  const authHeader = { 'Authorization': `Bearer ${token}` };
 
-  // ── Load inbox on mount ────────────────────────────────────────────────
   useEffect(() => {
+    if (!user) return;
     fetchInbox();
-  }, []);
+    connectWebSocket();
+    return () => { if (stompClient.current) stompClient.current.deactivate(); };
+  }, [user]);
 
-  // ── Auto-scroll to latest message ─────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const fetchInbox = async () => {
-    setLoadingInbox(true);
-    try {
-      const res  = await fetch(`${API_BASE_URL}/api/messages/inbox`, { headers: authHeader });
-      const data = await res.json();
-      if (data.success) setConversations(data.conversations);
-    } catch (err) {
-      console.error('Inbox fetch error:', err);
-    } finally {
-      setLoadingInbox(false);
-    }
+  // Keep ref in sync so WebSocket handler can access latest value
+  useEffect(() => {
+    activeConvoRef.current = activeConvo;
+  }, [activeConvo]);
+
+  const connectWebSocket = () => {
+    const client = new Client({
+      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
+      connectHeaders: { Authorization: `Bearer ${token}` },
+      onConnect: () => {
+        setConnected(true);
+        client.subscribe(`/user/${user.id}/queue/messages`, (msg) => {
+          const newMsg = JSON.parse(msg.body);
+          const currentConvo = activeConvoRef.current;
+          if (currentConvo &&
+            (newMsg.senderId === currentConvo || newMsg.receiverId === currentConvo)) {
+            setMessages(prev => [...prev, newMsg]);
+          }
+          fetchInbox();
+        });
+      },
+      onDisconnect: () => setConnected(false),
+      reconnectDelay: 5000,
+    });
+    client.activate();
+    stompClient.current = client;
   };
 
-  // ── Open a conversation ────────────────────────────────────────────────
-  const openConversation = async (convo) => {
-    setActiveConvo(convo);
-    setLoadingMessages(true);
+  const fetchInbox = async () => {
     try {
-      const res  = await fetch(`${API_BASE_URL}/api/messages/conversation/${convo.otherUserId}`, { headers: authHeader });
+      const res = await fetch(`${API_BASE_URL}/api/messages/inbox`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
       const data = await res.json();
-      if (data.success) setMessages(data.messages);
-    } catch (err) {
-      console.error('Conversation fetch error:', err);
-    } finally {
-      setLoadingMessages(false);
+      if (data.success) setConversations(data.conversations);
+    } catch (err) { console.error(err); }
+    setLoading(false);
+  };
+
+  const openConversation = async (otherUserId) => {
+    setActiveConvo(otherUserId);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/messages/conversation/${otherUserId}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.success) setMessages(data.messages || data.messages);
+    } catch (err) { console.error(err); }
+  };
+
+  const sendMessage = async () => {
+    if (!inputText.trim() || !activeConvo) return;
+
+    const msgData = {
+      senderId: user.id,
+      receiverId: activeConvo,
+      content: inputText.trim(),
+      carId: null
+    };
+
+    if (stompClient.current && connected) {
+      stompClient.current.publish({
+        destination: '/app/chat.send',
+        body: JSON.stringify(msgData)
+      });
+    } else {
+      await fetch(`${API_BASE_URL}/api/messages/send`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: activeConvo, content: inputText.trim() })
+      });
     }
-    // Refresh inbox to clear unread badge
+
+    // Optimistically add to UI
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      senderId: user.id,
+      receiverId: activeConvo,
+      content: inputText.trim(),
+      createdAt: new Date().toISOString(),
+      isRead: false
+    }]);
+    setInputText('');
     fetchInbox();
   };
 
-  // ── Send a reply ───────────────────────────────────────────────────────
-  const handleSend = async () => {
-    if (!newMessage.trim() || !activeConvo) return;
-    setSending(true);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader },
-        body:    JSON.stringify({
-          receiverId: activeConvo.otherUserId,
-          carId:      activeConvo.carId || null,
-          content:    newMessage.trim()
-        })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        // Optimistically add message to the thread
-        const optimistic = {
-          id:          Date.now(),
-          senderId:    user.id,
-          senderName:  user.username,
-          receiverId:  activeConvo.otherUserId,
-          content:     newMessage.trim(),
-          createdAt:   new Date().toISOString(),
-          isRead:      false
-        };
-        setMessages(prev => [...prev, optimistic]);
-        setNewMessage('');
-        // Refresh inbox for latest preview
-        fetchInbox();
-      }
-    } catch (err) {
-      console.error('Send error:', err);
-    } finally {
-      setSending(false);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
-  const handleKeyPress = e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
+  const activeConvoData = conversations.find(c => c.otherUserId === activeConvo);
 
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now - d;
-    const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1)   return 'just now';
-    if (diffMins < 60)  return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return d.toLocaleDateString();
+    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatMsgTime = (dateStr) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return formatTime(dateStr);
+    return date.toLocaleDateString();
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="inbox-panel">
 
-      {/* ── Conversation list (left) ── */}
+      {/* ── SIDEBAR ── */}
       <div className="inbox-sidebar">
         <div className="inbox-sidebar-header">
           <h3>Messages</h3>
-          <button className="inbox-refresh" onClick={fetchInbox} title="Refresh">↻</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              fontSize: '0.72rem', fontWeight: '600',
+              color: connected ? 'var(--green)' : 'var(--muted)'
+            }}>
+              {connected ? '● Live' : '○ Offline'}
+            </span>
+            <button className="inbox-refresh" onClick={fetchInbox} title="Refresh">↻</button>
+          </div>
         </div>
 
-        {loadingInbox ? (
-          <div className="inbox-loading">Loading...</div>
+        {loading ? (
+          <div className="inbox-loading">Loading conversations...</div>
         ) : conversations.length === 0 ? (
           <div className="inbox-empty">
-            <span>✉️</span>
-            <p>No messages yet</p>
-            <small>Browse cars and contact a seller to start a conversation.</small>
+            <span>💬</span>
+            <p>No conversations yet</p>
+            <small>Message a seller from a car listing</small>
           </div>
         ) : (
           <ul className="convo-list">
-            {conversations.map(convo => (
+            {conversations.map(c => (
               <li
-                key={convo.otherUserId}
-                className={`convo-item ${activeConvo?.otherUserId === convo.otherUserId ? 'active' : ''}`}
-                onClick={() => openConversation(convo)}
+                key={c.otherUserId}
+                className={`convo-item ${activeConvo === c.otherUserId ? 'active' : ''}`}
+                onClick={() => openConversation(c.otherUserId)}
               >
                 <div className="convo-avatar">
-                  {(convo.otherUsername || 'U').charAt(0).toUpperCase()}
+                  {c.otherUsername?.[0]?.toUpperCase() || '?'}
                 </div>
                 <div className="convo-info">
                   <div className="convo-top">
-                    <span className="convo-name">{convo.otherUsername}</span>
-                    <span className="convo-time">{formatTime(convo.latestTime)}</span>
+                    <span className="convo-name">{c.otherUsername || 'Unknown'}</span>
+                    <span className="convo-time">{formatDate(c.latestTime)}</span>
                   </div>
-                  <div className="convo-preview">
-                    {convo.latestMessage?.length > 48
-                      ? convo.latestMessage.slice(0, 48) + '…'
-                      : convo.latestMessage}
-                  </div>
+                  <span className="convo-preview">{c.latestMessage || 'No messages yet'}</span>
                 </div>
-                {convo.unreadCount > 0 && (
-                  <span className="unread-badge">{convo.unreadCount}</span>
+                {c.unreadCount > 0 && (
+                  <span className="unread-badge">{c.unreadCount}</span>
                 )}
               </li>
             ))}
@@ -169,75 +193,76 @@ const MessagesInbox = ({ user, sessionToken }) => {
         )}
       </div>
 
-      {/* ── Chat area (right) ── */}
+      {/* ── CHAT AREA ── */}
       <div className="inbox-chat">
         {!activeConvo ? (
           <div className="chat-placeholder">
             <span>💬</span>
             <h4>Select a conversation</h4>
-            <p>Choose a conversation from the list to read and reply to messages.</p>
+            <p>Choose a conversation from the left, or message a seller from a car listing.</p>
           </div>
         ) : (
           <>
-            {/* Chat header */}
+            {/* Header */}
             <div className="chat-header-bar">
               <div className="chat-header-avatar">
-                {activeConvo.otherUsername.charAt(0).toUpperCase()}
+                {activeConvoData?.otherUsername?.[0]?.toUpperCase() || '?'}
               </div>
               <div>
-                <div className="chat-header-name">{activeConvo.otherUsername}</div>
-                {activeConvo.carId && (
-                  <div className="chat-header-sub">Re: car listing</div>
-                )}
+                <div className="chat-header-name">
+                  {activeConvoData?.otherUsername || 'Unknown'}
+                </div>
+                <div className="chat-header-sub">
+                  {connected ? '🟢 Online' : '⚫ Offline'}
+                </div>
               </div>
             </div>
 
             {/* Messages */}
             <div className="chat-messages-area">
-              {loadingMessages ? (
-                <div className="chat-loading">Loading messages...</div>
-              ) : messages.length === 0 ? (
-                <div className="chat-no-messages">No messages yet. Say hello!</div>
-              ) : (
-                messages.map((msg, i) => {
-                  const isMe = msg.senderId === user.id || msg.senderId === Number(user.id);
-                  return (
-                    <div key={msg.id || i} className={`msg-row ${isMe ? 'me' : 'them'}`}>
-                      {!isMe && (
-                        <div className="msg-avatar">
-                          {(msg.senderName || activeConvo.otherUsername).charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="msg-block">
-                        <div className={`msg-bubble ${isMe ? 'me' : 'them'}`}>
-                          {msg.content}
-                        </div>
-                        <div className="msg-time">{formatMsgTime(msg.createdAt)}</div>
-                      </div>
-                    </div>
-                  );
-                })
+              {messages.length === 0 && (
+                <div className="chat-no-messages">
+                  Start the conversation below 👇
+                </div>
               )}
+              {messages.map((msg, i) => (
+                <div
+                  key={msg.id || i}
+                  className={`msg-row ${msg.senderId === user.id ? 'me' : 'them'}`}
+                >
+                  {msg.senderId !== user.id && (
+                    <div className="msg-avatar">
+                      {activeConvoData?.otherUsername?.[0]?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                  <div className="msg-block">
+                    <div className={`msg-bubble ${msg.senderId === user.id ? 'me' : 'them'}`}>
+                      {msg.content}
+                    </div>
+                    <span className="msg-time">{formatTime(msg.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Reply input */}
+            {/* Input */}
             <div className="chat-reply-bar">
               <textarea
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
+                value={inputText}
+                onChange={e => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Reply to ${activeConvo.otherUsername}...`}
+                placeholder="Type a message... (Enter to send)"
                 rows={2}
-                disabled={sending}
                 className="chat-reply-input"
+                disabled={!connected}
               />
               <button
+                onClick={sendMessage}
+                disabled={!inputText.trim()}
                 className="chat-send-btn"
-                onClick={handleSend}
-                disabled={!newMessage.trim() || sending}
               >
-                {sending ? '...' : '→'}
+                ↑
               </button>
             </div>
           </>
