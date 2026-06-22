@@ -12,7 +12,7 @@ const Footer = ({ onNavigate }) => {
             Shubham's Car Dealership
           </button>
           <p>Quality used vehicles, honestly priced. We believe buying a car should be simple, transparent, and enjoyable.</p>
-          <span className="footer-tagline">Auckland, New Zealand · Est. 2015</span>
+          <span className="footer-tagline">Auckland, New Zealand · Est. 2015 ✓</span>
         </div>
 
         <div className="footer-links">
