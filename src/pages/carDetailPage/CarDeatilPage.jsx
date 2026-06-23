@@ -12,9 +12,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
   const [messageText, setMessageText] = useState('');
   const [messageStatus, setMessageStatus] = useState('');
   const [showMsgForm, setShowMsgForm] = useState(false);
-
-  const [purchasing, setPurchasing] = useState(false);
-  const [purchaseError, setPurchaseError] = useState('');
+  const [showPhone, setShowPhone] = useState(false);
 
   if (!car) {
     return (
@@ -84,18 +82,12 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
     }
   };
 
-  const handlePurchase = () => {
-    if (!user) {
-      onNavigate('login');
-      return;
-    }
-
-    if (car.status !== 'AVAILABLE') {
-      alert('This car is no longer available for purchase.');
-      return;
-    }
-
-    onNavigate('checkout', car);
+  const handleEmailSeller = () => {
+    const subject = encodeURIComponent(`Enquiry about ${car.year} ${car.make} ${car.model}`);
+    const body = encodeURIComponent(
+      `Hi ${car.sellerName || 'there'},\n\nI'm interested in the ${car.year} ${car.make} ${car.model} listed for $${car.price?.toLocaleString()}. Is it still available?\n\nThanks`
+    );
+    window.location.href = `mailto:${car.sellerEmail || ''}?subject=${subject}&body=${body}`;
   };
 
   const specs = [
@@ -110,7 +102,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
   ];
 
   const isSeller = user && user.id === car.sellerId;
-  const isAvailable = car.status === 'AVAILABLE';
   const isSold = car.status === 'SOLD';
   const isReserved = car.status === 'RESERVED';
 
@@ -191,40 +182,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
               )}
             </div>
 
-            {!isSeller && user && isAvailable && (
-              <div className="booking-card">
-                <h3>Purchase This Car</h3>
-                {purchaseError && (
-                  <div className="auth-error" style={{ marginBottom: '12px' }}>
-                    {purchaseError}
-                  </div>
-                )}
-                <button
-                  className="booking-submit"
-                  onClick={handlePurchase}
-                  disabled={purchasing}
-                  style={{ background: 'var(--gold)', borderColor: 'var(--gold)', marginBottom: '12px' }}
-                >
-                  {purchasing ? 'Processing...' : 'Buy Now'}
-                </button>
-                <p style={{ fontSize: '12px', color: 'var(--gray)', marginTop: '8px', textAlign: 'center' }}>
-                  Secure checkout. Fill in your details to complete purchase.
-                </p>
-              </div>
-            )}
-
-            {!user && isAvailable && (
-              <div className="booking-card">
-                <h3>Buy This Car</h3>
-                <p style={{ fontSize: '14px', color: 'var(--gray-dark)', marginBottom: '12px' }}>
-                  Login to purchase this vehicle.
-                </p>
-                <button className="booking-submit" onClick={() => onNavigate('login')}>
-                  Login to Buy
-                </button>
-              </div>
-            )}
-
             {isSeller && (
               <div className="booking-card">
                 <h3>Your Listing</h3>
@@ -259,32 +216,45 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
 
             {isReserved && (
               <div className="booking-card">
-                <h3>Reserved - Pending Payment</h3>
+                <h3>Reserved - Pending Sale</h3>
                 <p style={{ fontSize: '14px', color: 'var(--gray-dark)' }}>
-                  This vehicle has been reserved by another buyer. If payment is not completed within 24 hours, it will become available again.
+                  This vehicle has been reserved by another buyer pending finalisation with the seller.
                 </p>
               </div>
             )}
 
-            <div className="booking-card">
-              <h3>Message Seller</h3>
+            {/* ===== CONTACT DEALER (Chat / Call / Email) ===== */}
+            <div className="contact-dealer-card">
+              <h3>Contact Dealer</h3>
 
-              {!user && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <p style={{ fontSize: '14px', color: 'var(--gray-dark)', margin: 0 }}>
-                    Login to contact the seller about this car.
-                  </p>
-                  <button className="booking-submit" onClick={() => onNavigate('login')}>
-                    Login to Message
-                  </button>
+              {car.sellerName && (
+                <div className="contact-dealer-seller">
+                  <div className="contact-dealer-avatar">
+                    {car.sellerName?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div className="contact-dealer-seller-info">
+                    <strong>{car.sellerName}</strong>
+                    <span>{car.carSource === 'DEALERSHIP' ? 'In-trade dealer' : 'Private seller'}</span>
+                  </div>
                 </div>
               )}
 
+              {!user && (
+                <>
+                  <p className="contact-dealer-login-note">
+                    Login to contact the seller about this car.
+                  </p>
+                  <button className="booking-submit" onClick={() => onNavigate('login')}>
+                    Login to Contact
+                  </button>
+                </>
+              )}
+
               {isSeller && (
-                <p style={{ fontSize: '14px', color: 'var(--gray-dark)', margin: 0 }}>
+                <p className="contact-dealer-login-note" style={{ margin: 0 }}>
                   This is your listing. Check your{' '}
                   <button
-                    style={{ background: 'none', border: 'none', color: 'var(--gold)', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
+                    style={{ background: 'none', border: 'none', color: 'var(--gold)', fontWeight: 600, cursor: 'pointer', fontSize: '14px', padding: 0 }}
                     onClick={() => onNavigate('dashboard')}
                   >
                     messages inbox
@@ -295,8 +265,42 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
 
               {user && !isSeller && (
                 <>
+                  <div className="contact-dealer-actions">
+                    <button
+                      className="contact-dealer-btn"
+                      onClick={() => setShowMsgForm(prev => !prev)}
+                    >
+                      <span className="icon">💬</span>
+                      Chat
+                    </button>
+                    <button
+                      className="contact-dealer-btn"
+                      onClick={() => setShowPhone(prev => !prev)}
+                      disabled={!car.sellerPhone}
+                      title={!car.sellerPhone ? 'Phone number not provided' : ''}
+                    >
+                      <span className="icon">📞</span>
+                      Call
+                    </button>
+                    <button
+                      className="contact-dealer-btn"
+                      onClick={handleEmailSeller}
+                      disabled={!car.sellerEmail}
+                      title={!car.sellerEmail ? 'Email not provided' : ''}
+                    >
+                      <span className="icon">✉️</span>
+                      Email
+                    </button>
+                  </div>
+
+                  {showPhone && car.sellerPhone && (
+                    <div className="contact-dealer-phone-reveal">
+                      <a href={`tel:${car.sellerPhone}`}>{car.sellerPhone}</a>
+                    </div>
+                  )}
+
                   {messageStatus === 'success' && (
-                    <div className="booking-success" style={{ marginBottom: '12px' }}>
+                    <div className="booking-success" style={{ marginTop: '12px' }}>
                       <span>✓</span>
                       <div>
                         <strong>Message Sent!</strong>
@@ -306,21 +310,13 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                   )}
 
                   {messageStatus === 'error' && (
-                    <div className="auth-error" style={{ marginBottom: '12px' }}>
+                    <div className="auth-error" style={{ marginTop: '12px' }}>
                       Failed to send. Please try again.
                     </div>
                   )}
 
-                  {!showMsgForm ? (
-                    <button
-                      className="booking-submit"
-                      onClick={() => setShowMsgForm(true)}
-                      style={{ background: 'var(--black)' }}
-                    >
-                      Contact Seller
-                    </button>
-                  ) : (
-                    <div className="booking-form">
+                  {showMsgForm && (
+                    <div className="contact-dealer-chat-panel">
                       <div className="form-field">
                         <label>Your Message</label>
                         <textarea
@@ -328,15 +324,6 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                           value={messageText}
                           onChange={e => setMessageText(e.target.value)}
                           placeholder={`Hi ${car.sellerName || 'there'}, I'm interested in the ${car.year} ${car.make} ${car.model}. Is it still available?`}
-                          style={{
-                            width: '100%', padding: '10px 12px',
-                            border: '1px solid var(--gray-lighter)',
-                            borderRadius: 'var(--radius-sm)',
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '14px',
-                            resize: 'vertical',
-                            background: 'var(--cream)'
-                          }}
                         />
                       </div>
                       <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>

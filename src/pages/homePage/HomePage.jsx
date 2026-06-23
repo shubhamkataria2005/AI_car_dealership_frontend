@@ -2,291 +2,328 @@
 import React, { useState, useEffect } from 'react';
 import './HomePage.css';
 import { api } from '../../services/api';
+import Reveal from '../../components/ui/Reveal';
+
+const MARQUEE_MAKES = [
+  'Toyota', 'Mazda', 'BMW', 'Tesla', 'Ford', 'Honda',
+  'Audi', 'Subaru', 'Nissan', 'Mercedes', 'Volkswagen', 'Lexus',
+];
+
+const TOOLS = [
+  { label: 'AI Assistant',    desc: 'Ask anything about a car, finance, or the buying process.' },
+  { label: 'Brand Recognizer', desc: 'Snap a photo, get the make and matching listings.' },
+  { label: 'Instant Trade-In', desc: 'A fair value for your current car in seconds.' },
+  { label: 'Finance Calculator', desc: 'See real monthly repayments before you commit.' },
+];
 
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePlatform, setActivePlatform] = useState('both');
+  const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
 
   useEffect(() => {
     api.getAllCars()
-      .then(data => {
-        if (data.success) {
-          setAllCars(data.cars);
-        }
-        setLoading(false);
+      .then((data) => {
+        if (data && data.success) setAllCars(data.cars || []);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const getDisplayedCars = () => {
-    if (activePlatform === 'marketplace') {
-      return allCars.filter(car => car.carSource === 'MARKETPLACE').slice(0, 6);
-    }
-    if (activePlatform === 'dealership') {
-      return allCars.filter(car => car.carSource === 'DEALERSHIP').slice(0, 6);
-    }
-    return allCars.slice(0, 12);
+  const countBySource = (src) => allCars.filter((c) => c.carSource === src).length;
+
+  const displayedCars = (() => {
+    if (activePlatform === 'marketplace') return allCars.filter((c) => c.carSource === 'MARKETPLACE').slice(0, 6);
+    if (activePlatform === 'dealership') return allCars.filter((c) => c.carSource === 'DEALERSHIP').slice(0, 6);
+    return allCars.slice(0, 6);
+  })();
+
+  const runSearch = () => {
+    const params = {
+      source: activePlatform === 'both' ? '' : activePlatform === 'marketplace' ? 'MARKETPLACE' : 'DEALERSHIP',
+    };
+    if (searchForm.keyword) params.keyword = searchForm.keyword;
+    if (searchForm.make) params.make = searchForm.make;
+    if (searchForm.maxPrice) params.maxPrice = searchForm.maxPrice;
+    if (searchForm.body) params.bodyType = searchForm.body;
+    onNavigate('inventory', { filters: params });
   };
 
-  const getCarCount = () => {
-    if (activePlatform === 'marketplace') {
-      return allCars.filter(car => car.carSource === 'MARKETPLACE').length;
-    }
-    if (activePlatform === 'dealership') {
-      return allCars.filter(car => car.carSource === 'DEALERSHIP').length;
-    }
-    return allCars.length;
-  };
-
-  const displayedCars = getDisplayedCars();
-  const carCount = getCarCount();
+  const setField = (k, v) => setSearchForm((p) => ({ ...p, [k]: v }));
 
   return (
     <div className="home-page page">
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="hero-content">
-            <span className="hero-eyebrow">Auckland's trusted car platform</span>
-            <h1>Find Your<br /><em>Perfect</em><br />Car</h1>
-            <p>Choose from private sellers on our marketplace or professionally inspected dealership cars.</p>
-            <div className="hero-actions">
-              <button className="btn-primary" onClick={() => onNavigate('inventory')}>
-                Browse All Cars
-              </button>
-              <button className="btn-outline" onClick={() => onNavigate('register')}>
-                Create Account
-              </button>
-            </div>
-            <div className="hero-divider" />
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <strong>{allCars.length}+</strong>
-                <span>Cars available</span>
-              </div>
-              <div className="hero-stat">
-                <strong>5★</strong>
-                <span>Customer rating</span>
-              </div>
-              <div className="hero-stat">
-                <strong>10yr</strong>
-                <span>In business</span>
-              </div>
-            </div>
-          </div>
 
-          <div className="hero-image-wrap">
-            <div className="hero-image">
-              <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" alt="Premium used cars" />
+      {/* ─────────────────────────── HERO ─────────────────────────── */}
+      <section className="hp-hero">
+        <div className="hp-hero-glow" aria-hidden="true" />
+        <div className="hp-hero-sweep" aria-hidden="true" />
+        <div className="container hp-hero-inner">
+          <Reveal as="span" className="hp-eyebrow" delay={0}>
+            Auckland · buy, sell &amp; trade
+          </Reveal>
+
+          <Reveal as="h1" className="hp-hero-title" delay={80}>
+            Find your<br />
+            <span className="hp-paren">(next)</span> car.
+          </Reveal>
+
+          <Reveal as="p" className="hp-hero-sub" delay={200}>
+            Private-seller listings and fully inspected dealership cars, in one place.
+            Browse, message the seller, sort your finance — without the showroom pressure.
+          </Reveal>
+
+          <Reveal className="hp-hero-actions" delay={300}>
+            <button className="btn-primary" onClick={() => onNavigate('inventory')}>
+              Browse all cars
+            </button>
+            <button className="btn-outline" onClick={() => onNavigate('register')}>
+              Sell your car
+            </button>
+          </Reveal>
+
+          <Reveal className="hp-hero-meta" delay={420}>
+            <div className="hp-meta-item">
+              <strong>{loading ? '—' : `${allCars.length}+`}</strong>
+              <span>cars available</span>
             </div>
-            <div className="hero-image-badge">
-              <strong>{allCars.length}+</strong>
-              <span>Vehicles available now</span>
+            <div className="hp-meta-rule" />
+            <div className="hp-meta-item">
+              <strong>2</strong>
+              <span>ways to buy</span>
             </div>
+            <div className="hp-meta-rule" />
+            <div className="hp-meta-item">
+              <strong>10yr</strong>
+              <span>in business</span>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* Ambient marquee — the signature */}
+        <div className="hp-marquee" aria-hidden="true">
+          <div className="hp-marquee-track">
+            {[...MARQUEE_MAKES, ...MARQUEE_MAKES].map((m, i) => (
+              <span className="hp-marquee-item" key={i}>
+                {m}<span className="hp-marquee-dot">•</span>
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="platform-selector-section">
+      {/* ─────────────────────────── SEARCH ─────────────────────────── */}
+      <section className="hp-search">
         <div className="container">
-          <div className="platform-tabs">
-            <button
-              className={`platform-tab ${activePlatform === 'both' ? 'active' : ''}`}
-              onClick={() => setActivePlatform('both')}
-            >
-              All Cars ({allCars.length})
-            </button>
-            <button
-              className={`platform-tab ${activePlatform === 'marketplace' ? 'active' : ''}`}
-              onClick={() => setActivePlatform('marketplace')}
-            >
-              Marketplace ({allCars.filter(car => car.carSource === 'MARKETPLACE').length})
-            </button>
-            <button
-              className={`platform-tab ${activePlatform === 'dealership' ? 'active' : ''}`}
-              onClick={() => setActivePlatform('dealership')}
-            >
-              Dealership ({allCars.filter(car => car.carSource === 'DEALERSHIP').length})
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="search-section">
-        <div className="container">
-          <div className="search-bar-home">
-            <div className="search-field">
-              <label>Search ANY Car</label>
+          <Reveal className="hp-search-bar">
+            <div className="hp-field hp-field-grow">
+              <label htmlFor="hp-kw">Keyword</label>
               <input
-                type="text"
-                id="search-keyword"
-                placeholder="Search any make, model, year, or keyword..."
-                style={{
-                  padding: '11px 14px',
-                  border: '1px solid var(--gray-lighter)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '14px',
-                  width: '100%',
-                  background: 'var(--white)'
-                }}
+                id="hp-kw" type="text" placeholder="Make, model, year…"
+                value={searchForm.keyword}
+                onChange={(e) => setField('keyword', e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && runSearch()}
               />
             </div>
-            <div className="search-field">
-              <label>Make</label>
-              <select id="search-make">
+            <div className="hp-field">
+              <label htmlFor="hp-make">Make</label>
+              <select id="hp-make" value={searchForm.make} onChange={(e) => setField('make', e.target.value)}>
                 <option value="">Any make</option>
-                <option>Toyota</option><option>Honda</option>
-                <option>Mazda</option><option>Subaru</option>
-                <option>Nissan</option><option>Ford</option>
-                <option>BMW</option><option>Mercedes</option><option>Audi</option>
+                {['Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi'].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
               </select>
             </div>
-            <div className="search-field">
-              <label>Max Price</label>
-              <select id="search-price">
+            <div className="hp-field">
+              <label htmlFor="hp-price">Max price</label>
+              <select id="hp-price" value={searchForm.maxPrice} onChange={(e) => setField('maxPrice', e.target.value)}>
                 <option value="">Any price</option>
-                <option value="15000">Under $15,000</option>
-                <option value="25000">Under $25,000</option>
-                <option value="40000">Under $40,000</option>
-                <option value="60000">Under $60,000</option>
-                <option value="100000">Under $100,000</option>
+                <option value="15000">Under $15k</option>
+                <option value="25000">Under $25k</option>
+                <option value="40000">Under $40k</option>
+                <option value="60000">Under $60k</option>
+                <option value="100000">Under $100k</option>
               </select>
             </div>
-            <div className="search-field">
-              <label>Body Type</label>
-              <select id="search-body">
+            <div className="hp-field">
+              <label htmlFor="hp-body">Body</label>
+              <select id="hp-body" value={searchForm.body} onChange={(e) => setField('body', e.target.value)}>
                 <option value="">Any type</option>
-                <option>Sedan</option><option>SUV</option>
-                <option>Hatchback</option><option>Ute</option><option>Wagon</option>
-                <option>Coupe</option><option>Convertible</option>
+                {['Sedan', 'SUV', 'Hatchback', 'Ute', 'Wagon', 'Coupe', 'Convertible'].map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
               </select>
             </div>
-            <button className="search-btn" onClick={() => {
-              const keyword = document.getElementById('search-keyword')?.value || '';
-              const make = document.getElementById('search-make').value;
-              const maxPrice = document.getElementById('search-price').value;
-              const bodyType = document.getElementById('search-body').value;
-              const params = { source: activePlatform === 'both' ? '' : activePlatform === 'marketplace' ? 'MARKETPLACE' : 'DEALERSHIP' };
-              if (keyword) params.keyword = keyword;
-              if (make) params.make = make;
-              if (maxPrice) params.maxPrice = maxPrice;
-              if (bodyType) params.bodyType = bodyType;
-              onNavigate('inventory', { filters: params });
-            }}>
-              Search Cars
-            </button>
-          </div>
+            <button className="hp-search-btn" onClick={runSearch}>Search</button>
+          </Reveal>
         </div>
       </section>
 
-      <section className="featured-section">
+      {/* ─────────────────────────── FEATURED ─────────────────────────── */}
+      <section className="hp-featured">
         <div className="container">
-          <div className="section-header">
-            <div>
-              <div className="section-label">Featured</div>
-              <h2>{activePlatform === 'both' ? 'Latest Vehicles' : activePlatform === 'marketplace' ? 'Marketplace Listings' : 'Dealership Inventory'}</h2>
-            </div>
-            <button className="view-all-btn" onClick={() => onNavigate('inventory')}>
-              View all vehicles
-            </button>
+          <div className="hp-section-head">
+            <Reveal>
+              <span className="hp-section-label">Featured</span>
+              <h2>
+                {activePlatform === 'both' ? 'Latest vehicles'
+                  : activePlatform === 'marketplace' ? 'Marketplace listings'
+                  : 'Dealership inventory'}
+              </h2>
+            </Reveal>
+            <Reveal className="hp-tabs" delay={120}>
+              {[
+                { id: 'both', label: `All (${allCars.length})` },
+                { id: 'marketplace', label: `Marketplace (${countBySource('MARKETPLACE')})` },
+                { id: 'dealership', label: `Dealership (${countBySource('DEALERSHIP')})` },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  className={`hp-tab ${activePlatform === t.id ? 'active' : ''}`}
+                  onClick={() => setActivePlatform(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </Reveal>
           </div>
 
-          <div className="cars-grid">
+          <div className="hp-cars-grid">
             {loading ? (
-              <div>Loading cars...</div>
+              <div className="hp-cars-empty">Loading vehicles…</div>
             ) : displayedCars.length === 0 ? (
-              <div>No cars available in this category.</div>
+              <div className="hp-cars-empty">No cars in this category yet.</div>
             ) : (
-              displayedCars.map(car => (
-                <div key={car.id} className="car-card" onClick={() => onNavigate('car-detail', car)}>
-                  <div className="car-card-image">
-                    <img src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'}
-                      alt={`${car.year} ${car.make} ${car.model}`} />
-                    <span className="car-badge">{car.status === 'AVAILABLE' ? 'Available' : 'Sold'}</span>
-                    {car.carSource === 'DEALERSHIP' && (
-                      <span className="source-badge dealership">Dealership</span>
-                    )}
-                    {car.carSource === 'MARKETPLACE' && (
-                      <span className="source-badge marketplace">Private Seller</span>
-                    )}
-                  </div>
-                  <div className="car-card-body">
-                    <div className="car-card-title">
-                      <h3>{car.make} {car.model}</h3>
-                      <span className="car-price">${car.price?.toLocaleString()}</span>
+              displayedCars.map((car, i) => (
+                <Reveal key={car.id} delay={i * 70}>
+                  <article className="hp-card" onClick={() => onNavigate('car-detail', car)}>
+                    <div className="hp-card-img">
+                      <img
+                        src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700&q=80'}
+                        alt={`${car.year} ${car.make} ${car.model}`}
+                        loading="lazy"
+                      />
+                      {car.carSource === 'DEALERSHIP' && <span className="hp-tag hp-tag-dealer">Dealership</span>}
+                      {car.carSource === 'MARKETPLACE' && <span className="hp-tag hp-tag-market">Private seller</span>}
+                      {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
+                        <span className="hp-tag-inspected">✓ Inspected</span>
+                      )}
                     </div>
-                    <div className="car-card-specs">
-                      <span>{car.mileage?.toLocaleString()} km</span>
-                      <span>{car.fuel}</span>
-                      <span>{car.transmission}</span>
+                    <div className="hp-card-body">
+                      <div className="hp-card-top">
+                        <h3>{car.make} {car.model}</h3>
+                        <span className="hp-card-price">${car.price?.toLocaleString()}</span>
+                      </div>
+                      <div className="hp-card-specs">
+                        <span>{car.year}</span>
+                        <span>{car.mileage?.toLocaleString()} km</span>
+                        <span>{car.fuel}</span>
+                        <span>{car.transmission}</span>
+                      </div>
+                      <div className="hp-card-foot">
+                        View details <span className="hp-arrow">→</span>
+                      </div>
                     </div>
-                    <div className="car-card-footer">
-                      <button className="car-card-btn">View Details</button>
-                      <span className="car-card-year">{car.year}</span>
-                    </div>
-                  </div>
-                </div>
+                  </article>
+                </Reveal>
               ))
             )}
           </div>
+
+          <Reveal className="hp-viewall-wrap">
+            <button className="btn-outline" onClick={() => onNavigate('inventory')}>
+              View all vehicles
+            </button>
+          </Reveal>
         </div>
       </section>
 
-      <section className="why-us">
+      {/* ───────────────────── TWO WAYS TO BUY (editorial split) ───────────────────── */}
+      <section className="hp-ways">
         <div className="container">
-          <div className="why-us-header">
-            <div className="section-label" style={{ color: 'var(--gold)' }}>Two ways to buy</div>
-            <h2>Choose Your Experience</h2>
-          </div>
-          <div className="why-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <div className="why-card">
-              <span className="why-number">Marketplace</span>
-              <h3>Marketplace</h3>
-              <p>Buy directly from private sellers. Find great deals and negotiate your own price. Like TradeMe but specialized for cars.</p>
-              <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
-                <li>Direct seller communication</li>
-                <li>Negotiate your price</li>
-                <li>List your own car</li>
-                <li>AI-powered price suggestions</li>
+          <Reveal>
+            <span className="hp-section-label">Two ways to buy</span>
+            <h2 className="hp-ways-title">Your call. <span className="hp-paren">(both honest)</span></h2>
+          </Reveal>
+
+          <div className="hp-ways-grid">
+            <Reveal className="hp-way" delay={80}>
+              <span className="hp-way-index">Marketplace</span>
+              <h3>Buy direct from private sellers</h3>
+              <p>Find sharper prices and deal one-to-one. Message the seller, negotiate, and list your own car in minutes.</p>
+              <ul className="hp-way-list">
+                <li>Direct seller messaging</li>
+                <li>Negotiate your own price</li>
+                <li>List your car free</li>
+                <li>AI price suggestions</li>
               </ul>
-            </div>
-            <div className="why-card">
-              <span className="why-number">Dealership</span>
-              <h3>Dealership</h3>
-              <p>Buy from our professionally inspected, company-owned inventory with full support and service options.</p>
-              <ul style={{ marginTop: '12px', color: 'var(--gray)', fontSize: '13px' }}>
-                <li>150+ point inspection</li>
+              <button className="hp-way-btn" onClick={() => onNavigate('inventory', { filters: { source: 'MARKETPLACE' } })}>
+                Browse marketplace →
+              </button>
+            </Reveal>
+
+            <Reveal className="hp-way hp-way-accent" delay={180}>
+              <span className="hp-way-index">Dealership</span>
+              <h3>Buy from inspected stock</h3>
+              <p>Company-owned cars, professionally checked, with test drives, servicing and warranty options on hand.</p>
+              <ul className="hp-way-list">
+                <li>150-point inspection</li>
                 <li>Test drives available</li>
-                <li>Service center access</li>
+                <li>Service centre access</li>
                 <li>Warranty options</li>
               </ul>
-            </div>
+              <button className="hp-way-btn" onClick={() => onNavigate('inventory', { filters: { source: 'DEALERSHIP' } })}>
+                Browse dealership →
+              </button>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      <section className="cta-section">
+      {/* ───────────────────── AI TOOLS (differentiator) ───────────────────── */}
+      <section className="hp-tools">
         <div className="container">
-          <div className="cta-box">
-            <div className="cta-content">
-              <div className="section-label">Get started today</div>
-              <h2>Ready to Find Your Next Car?</h2>
-              <p>Create a free account to save favourites, book test drives, and access our AI tools.</p>
-            </div>
-            <div className="cta-actions">
-              <button className="btn-primary" onClick={() => onNavigate('inventory')}>
-                Browse Inventory
-              </button>
-              <button className="btn-outline" onClick={() => onNavigate('register')}>
-                Sign Up Free
-              </button>
-            </div>
+          <div className="hp-tools-head">
+            <Reveal>
+              <span className="hp-section-label">Built in</span>
+              <h2>Smarter than the average listing site</h2>
+            </Reveal>
+            <Reveal as="p" className="hp-tools-sub" delay={120}>
+              Tools that actually help you decide — free with any account.
+            </Reveal>
+          </div>
+          <div className="hp-tools-grid">
+            {TOOLS.map((t, i) => (
+              <Reveal key={t.label} className="hp-tool" delay={i * 80}>
+                <h4>{t.label}</h4>
+                <p>{t.desc}</p>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ─────────────────────────── CTA ─────────────────────────── */}
+      <section className="hp-cta">
+        <div className="container">
+          <Reveal className="hp-cta-box">
+            <div className="hp-cta-glow" aria-hidden="true" />
+            <div className="hp-cta-content">
+              <span className="hp-section-label">Get started today</span>
+              <h2>Ready to find your next car?</h2>
+              <p>Create a free account to save favourites, book test drives and use every AI tool.</p>
+            </div>
+            <div className="hp-cta-actions">
+              <button className="btn-primary" onClick={() => onNavigate('inventory')}>Browse inventory</button>
+              <button className="btn-outline" onClick={() => onNavigate('register')}>Sign up free</button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
     </div>
   );
 };
+
 export default HomePage;

@@ -1,114 +1,140 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* ============================================================
+   DESIGN SYSTEM — "Showroom at night"
+   Asphalt black · headlight white · ignition-amber accent
+   ============================================================ */
 :root {
-  --bg:           #F4F6FF;
-  --surface:      #FFFFFF;
-  --surface2:     #EEF1FF;
-  --surface3:     #E4E8FF;
-  --border:       rgba(99,102,241,0.14);
-  --border2:      rgba(99,102,241,0.26);
-  --border3:      rgba(99,102,241,0.38);
-  --text:         #0F172A;
-  --muted:        #64748B;
-  --muted2:       #475569;
-  --accent:       #6366F1;
-  --accent2:      #EC4899;
-  --gold:         #F59E0B;
-  --gold-light:   #FCD34D;
-  --gold-pale:    rgba(245,158,11,0.1);
-  --red:          #EF4444;
-  --green:        #10B981;
-  --white:        #0F172A;
-  --black:        #F4F6FF;
-  --charcoal:     #FFFFFF;
-  --gray:         #64748B;
-  --gray-dark:    #475569;
-  --gray-light:   rgba(99,102,241,0.12);
-  --gray-lighter: rgba(99,102,241,0.06);
-  --cream:        #EEF1FF;
+  /* Surfaces */
+  --bg:        #0A0C10;   /* asphalt */
+  --bg2:       #0E1117;
+  --surface:   #14181F;   /* raised panel */
+  --surface2:  #1A1F28;
+  --surface3:  #232934;
 
+  /* Lines */
+  --border:    rgba(255,255,255,0.08);
+  --border2:   rgba(255,255,255,0.14);
+  --border3:   rgba(255,255,255,0.22);
+
+  /* Type colors */
+  --text:      #F4F6F8;   /* headlight white */
+  --muted:     #8B94A3;   /* steel */
+  --muted2:    #BEC6D2;
+
+  /* Signature + semantic */
+  --accent:      #FF7A1A; /* ignition amber */
+  --accent2:     #FFA24D; /* amber light (for warm gradients) */
+  --accent-ink:  #0A0C10; /* ink on amber */
+  --gold:        #FFB44A;
+  --gold-light:  #FFD08A;
+  --gold-pale:   rgba(255,180,74,0.12);
+  --green:       #34D399;
+  --red:         #FF5C6C;
+
+  /* Legacy aliases kept so existing components don't break.
+     (Many files reference var(--cream), var(--black), var(--white), etc.) */
+  --white:        #F4F6F8;
+  --black:        #0A0C10;
+  --charcoal:     #F4F6F8;
+  --cream:        #161B24;
+  --gray:         #8B94A3;
+  --gray-dark:    #BEC6D2;
+  --gray-light:   rgba(255,255,255,0.10);
+  --gray-lighter: rgba(255,255,255,0.08);
+
+  /* Fonts */
   --font-display: 'Syne', sans-serif;
   --font-body:    'DM Sans', sans-serif;
   --font-sans:    'DM Sans', sans-serif;
   --font-serif:   'Syne', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
 
-  --radius-sm:  6px;
-  --radius:     10px;
-  --radius-lg:  16px;
-  --radius-xl:  22px;
+  /* Radii */
+  --radius-sm:  8px;
+  --radius:     12px;
+  --radius-lg:  18px;
+  --radius-xl:  26px;
 
-  --shadow-sm:  0 1px 4px rgba(99,102,241,0.10);
-  --shadow:     0 4px 16px rgba(99,102,241,0.14);
-  --shadow-md:  0 8px 32px rgba(99,102,241,0.16);
-  --shadow-lg:  0 16px 48px rgba(99,102,241,0.18);
-  --shadow-xl:  0 24px 64px rgba(99,102,241,0.20);
+  /* Shadows (dark-tuned) */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
+  --shadow:     0 8px 24px rgba(0,0,0,0.45);
+  --shadow-md:  0 14px 40px rgba(0,0,0,0.5);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,0.55);
+  --shadow-xl:  0 36px 90px rgba(0,0,0,0.6);
+  --glow:       0 0 0 1px rgba(255,122,26,0.35), 0 18px 50px rgba(255,122,26,0.22);
+
+  /* Motion */
+  --ease:    cubic-bezier(0.16, 0.84, 0.44, 1);
+  --ease-io: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-body);
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.6;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(99,102,241,0.012) 2px, rgba(99,102,241,0.012) 4px);
-  pointer-events: none;
-  z-index: 9999;
-}
-
-::selection { background: var(--accent); color: #fff; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 8px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Visible keyboard focus everywhere */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 #root { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
 
-h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; color: var(--text); letter-spacing: -0.03em; }
-h1 { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; }
-h2 { font-size: clamp(1.8rem, 4vw, 3rem); }
-h3 { font-size: clamp(1.2rem, 2.5vw, 1.75rem); }
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700; line-height: 1.04;
+  color: var(--text); letter-spacing: -0.035em;
+}
+h1 { font-size: clamp(2.6rem, 7vw, 5.5rem); font-weight: 800; }
+h2 { font-size: clamp(1.9rem, 4.4vw, 3.4rem); }
+h3 { font-size: clamp(1.2rem, 2.5vw, 1.8rem); }
 h4 { font-size: 1.1rem; }
 
 p { margin: 0; }
 a { text-decoration: none; color: inherit; }
-button { cursor: pointer; font-family: var(--font-body); }
+button { cursor: pointer; font-family: var(--font-body); color: inherit; }
 img { display: block; max-width: 100%; }
 
-.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 32px; }
 @media (max-width: 768px) { .container { padding: 0 20px; } }
 
 .page { flex: 1; }
 .App { display: flex; flex-direction: column; min-height: 100vh; }
 .main-content { flex: 1; }
 
+/* ── Buttons (global, reused across pages) ── */
 .btn-primary {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 13px 28px; background: var(--accent); color: #fff;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 28px; background: var(--accent); color: var(--accent-ink);
   border: none; border-radius: var(--radius-sm);
   font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  transition: all 0.25s; cursor: pointer;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.3s var(--ease);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(99,102,241,0.4); opacity: 0.9; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--glow); background: var(--accent2); }
+.btn-primary:active { transform: translateY(0); }
 
 .btn-outline {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 28px; background: transparent; color: var(--text);
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 28px; background: transparent; color: var(--text);
   border: 1px solid var(--border2); border-radius: var(--radius-sm);
   font-family: var(--font-display); font-size: 0.82rem; font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  transition: all 0.25s; cursor: pointer;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease), transform 0.3s var(--ease);
 }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
 
@@ -117,4 +143,26 @@ img { display: block; max-width: 100%; }
   justify-content: center; height: 100vh; gap: 20px;
   background: var(--bg); font-family: var(--font-display);
   font-size: 1rem; color: var(--muted);
+}
+
+/* ============================================================
+   MOTION PRIMITIVES (used by <Reveal/> and the marquee)
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 26px));
+  transition: opacity 0.8s var(--ease-io), transform 0.8s var(--ease-io);
+  will-change: opacity, transform;
+}
+.reveal--in { opacity: 1; transform: none; }
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
