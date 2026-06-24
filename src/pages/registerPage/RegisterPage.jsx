@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../loginPage/LoginPage.css';
 import { API_BASE_URL } from '../../config';
+
+// Same clip as the login page — drop it once at public/videos/auth.mp4.
+const AUTH_VIDEO_SRC = '/videos/auth.mp4';
+const AUTH_POSTER_SRC = '/videos/auth-poster.jpg';
 
 const Register = ({ onLoginSuccess, onNavigate }) => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -8,6 +12,14 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+
+  const [showVideo, setShowVideo] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isNarrow = window.innerWidth <= 768;
+    setShowVideo(!reduceMotion && !isNarrow);
+  }, []);
 
   const handleChange = e => { 
     setFormData({ ...formData, [e.target.name]: e.target.value }); 
@@ -31,18 +43,14 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
       if (data.success) {
         setSuccess('Account created successfully!');
         
-        // Check if the backend returns user and token (auto-login)
         if (data.user && data.sessionToken) {
           setRedirecting(true);
-          // Store token and user data
           localStorage.setItem('token', data.sessionToken);
           localStorage.setItem('user', JSON.stringify(data.user));
-          // Auto-login after registration
           setTimeout(() => {
             onLoginSuccess(data.user, data.sessionToken);
           }, 1500);
         } else {
-          // If backend doesn't auto-login, go to login page after delay
           setTimeout(() => {
             onNavigate('login');
           }, 1500);
@@ -57,12 +65,35 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
     }
   };
 
-  // Show redirecting message
+  const renderAuthPanelMedia = () => (
+    showVideo ? (
+      <div className="auth-panel-media" aria-hidden="true">
+        <video
+          className="auth-panel-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={AUTH_POSTER_SRC}
+        >
+          <source src={AUTH_VIDEO_SRC} type="video/mp4" />
+        </video>
+      </div>
+    ) : (
+      <div
+        className="auth-panel-media auth-panel-media-static"
+        aria-hidden="true"
+        style={{ backgroundImage: `url(${AUTH_POSTER_SRC})` }}
+      />
+    )
+  );
+
   if (redirecting) {
     return (
       <div className="auth-page">
         <div className="auth-panel-left">
-          <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
+          {renderAuthPanelMedia()}
           <div className="auth-panel-overlay" />
           <div className="auth-panel-text">
             <span className="auth-panel-eyebrow">Welcome!</span>
@@ -83,9 +114,9 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
 
   return (
     <div className="auth-page">
-      {/* Left decorative panel */}
+      {/* Left cinematic panel */}
       <div className="auth-panel-left">
-        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
+        {renderAuthPanelMedia()}
         <div className="auth-panel-overlay" />
         <div className="auth-panel-text">
           <span className="auth-panel-eyebrow">Join the community</span>

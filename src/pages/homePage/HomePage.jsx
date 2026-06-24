@@ -16,11 +16,30 @@ const TOOLS = [
   { label: 'Finance Calculator', desc: 'See real monthly repayments before you commit.' },
 ];
 
+// Drop your files at these paths inside the `public/` folder of the project
+// (e.g. public/videos/hero.mp4, public/videos/hero-poster.jpg).
+// Keep each mp4 small — aim under ~5MB for a 10-20s muted loop.
+const HERO_VIDEO_SRC = '/videos/hero.mp4';
+const HERO_POSTER_SRC = '/videos/hero-poster.jpg';
+const CTA_VIDEO_SRC = '/videos/cta.mp4';
+const CTA_POSTER_SRC = '/videos/cta-poster.jpg';
+
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePlatform, setActivePlatform] = useState('both');
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
+
+  // Only load/play the video on wider screens, and never if the user
+  // has asked their OS for reduced motion. Mobile + reduced-motion get
+  // the static poster image instead — better for data, battery, and a11y.
+  const [showVideo, setShowVideo] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isNarrow = window.innerWidth <= 768;
+    setShowVideo(!reduceMotion && !isNarrow);
+  }, []);
 
   useEffect(() => {
     api.getAllCars()
@@ -57,6 +76,30 @@ const HomePage = ({ onNavigate }) => {
 
       {/* ─────────────────────────── HERO ─────────────────────────── */}
       <section className="hp-hero">
+        {showVideo ? (
+          <div className="hp-hero-media" aria-hidden="true">
+            <video
+              className="hp-hero-video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              poster={HERO_POSTER_SRC}
+            >
+              <source src={HERO_VIDEO_SRC} type="video/mp4" />
+            </video>
+            <div className="hp-hero-media-overlay" />
+          </div>
+        ) : (
+          <div
+            className="hp-hero-media hp-hero-media-static"
+            aria-hidden="true"
+            style={{ backgroundImage: `url(${HERO_POSTER_SRC})` }}
+          >
+            <div className="hp-hero-media-overlay" />
+          </div>
+        )}
         <div className="hp-hero-glow" aria-hidden="true" />
         <div className="hp-hero-sweep" aria-hidden="true" />
         <div className="container hp-hero-inner">
@@ -308,6 +351,30 @@ const HomePage = ({ onNavigate }) => {
       <section className="hp-cta">
         <div className="container">
           <Reveal className="hp-cta-box">
+            {showVideo ? (
+              <div className="hp-cta-media" aria-hidden="true">
+                <video
+                  className="hp-cta-video"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  poster={CTA_POSTER_SRC}
+                >
+                  <source src={CTA_VIDEO_SRC} type="video/mp4" />
+                </video>
+                <div className="hp-cta-media-overlay" />
+              </div>
+            ) : (
+              <div
+                className="hp-cta-media hp-cta-media-static"
+                aria-hidden="true"
+                style={{ backgroundImage: `url(${CTA_POSTER_SRC})` }}
+              >
+                <div className="hp-cta-media-overlay" />
+              </div>
+            )}
             <div className="hp-cta-glow" aria-hidden="true" />
             <div className="hp-cta-content">
               <span className="hp-section-label">Get started today</span>

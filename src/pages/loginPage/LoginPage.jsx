@@ -2,11 +2,26 @@ import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 import { API_BASE_URL } from '../../config';
 
+// Drop your clip at public/videos/auth.mp4 (and optionally a still frame
+// at public/videos/auth-poster.jpg for the mobile/reduced-motion fallback).
+const AUTH_VIDEO_SRC = '/videos/auth.mp4';
+const AUTH_POSTER_SRC = '/videos/auth-poster.jpg';
+
 const Login = ({ onLoginSuccess, onNavigate }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+
+  // Same gating rule as the homepage videos: skip on narrow screens and
+  // when the user has asked their OS for reduced motion.
+  const [showVideo, setShowVideo] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isNarrow = window.innerWidth <= 768;
+    setShowVideo(!reduceMotion && !isNarrow);
+  }, []);
 
   const handleChange = e => { 
     setFormData({ ...formData, [e.target.name]: e.target.value }); 
@@ -28,10 +43,8 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
       
       if (data.success) {
         setRedirecting(true);
-        // Store token and user data
         localStorage.setItem('token', data.sessionToken);
         localStorage.setItem('user', JSON.stringify(data.user));
-        // Call the success handler which will navigate to dashboard
         onLoginSuccess(data.user, data.sessionToken);
       } else {
         setError(data.message || 'Invalid credentials. Please try again.');
@@ -43,12 +56,35 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
     }
   };
 
-  // If redirecting, don't render the form
+  const renderAuthPanelMedia = () => (
+    showVideo ? (
+      <div className="auth-panel-media" aria-hidden="true">
+        <video
+          className="auth-panel-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={AUTH_POSTER_SRC}
+        >
+          <source src={AUTH_VIDEO_SRC} type="video/mp4" />
+        </video>
+      </div>
+    ) : (
+      <div
+        className="auth-panel-media auth-panel-media-static"
+        aria-hidden="true"
+        style={{ backgroundImage: `url(${AUTH_POSTER_SRC})` }}
+      />
+    )
+  );
+
   if (redirecting) {
     return (
       <div className="auth-page">
         <div className="auth-panel-left">
-          <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
+          {renderAuthPanelMedia()}
           <div className="auth-panel-overlay" />
           <div className="auth-panel-text">
             <span className="auth-panel-eyebrow">Welcome back</span>
@@ -69,9 +105,9 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
 
   return (
     <div className="auth-page">
-      {/* Left decorative panel */}
+      {/* Left cinematic panel */}
       <div className="auth-panel-left">
-        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80" alt="" />
+        {renderAuthPanelMedia()}
         <div className="auth-panel-overlay" />
         <div className="auth-panel-text">
           <span className="auth-panel-eyebrow">Welcome back</span>
