@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: http://car-dealership-backend-env.eba-sfiicukk.ap-southeast-2.elasticbeanstalk.com
+          VITE_API_URL: https://dxxhqc50mo2lv.cloudfront.net
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
