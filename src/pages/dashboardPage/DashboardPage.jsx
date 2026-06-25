@@ -300,7 +300,12 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
           </button>
 
           <div className="dash-user">
-            <div className="dash-avatar">{user?.username?.charAt(0).toUpperCase() || 'U'}</div>
+            <div
+              className="dash-avatar"
+              style={user?.profilePhoto ? { backgroundImage: `url(${user.profilePhoto})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' } : undefined}
+            >
+              {user?.username?.charAt(0).toUpperCase() || 'U'}
+            </div>
             <div className="dash-user-info">
               <strong>{user?.username || 'User'}</strong>
               <span>{user?.email || 'user@email.com'}</span>
@@ -424,7 +429,12 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
           <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
             <div className="mobile-menu" onClick={e => e.stopPropagation()}>
               <div className="mobile-menu-user">
-                <div className="dash-avatar">{user?.username?.charAt(0).toUpperCase() || 'U'}</div>
+                <div
+                  className="dash-avatar"
+                  style={user?.profilePhoto ? { backgroundImage: `url(${user.profilePhoto})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' } : undefined}
+                >
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
                 <div>
                   <strong>{user?.username}</strong>
                   <span>{user?.email}</span>
