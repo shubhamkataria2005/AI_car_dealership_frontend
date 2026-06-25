@@ -20,6 +20,13 @@ function App() {
   const [currentCar, setCurrentCar] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [locationFilters, setLocationFilters] = useState(null); // FIX: store filters for inventory
+  // NEW: true once we've finished checking localStorage for an existing
+  // session. Until then, `user` being null doesn't actually mean "not
+  // logged in" — it just means we haven't checked yet. Acting on that too
+  // early is what caused a redirect-to-login/back-to-dashboard ping-pong
+  // fast enough to trip Chrome's navigation flood protection and crash the
+  // tab on a hard refresh of /dashboard or /admin.
+  const [authChecked, setAuthChecked] = useState(false);
 
   const handleNavigate = (page, data = null) => {
     setCurrentPage(page);
@@ -66,6 +73,7 @@ function App() {
       setSessionToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
+    setAuthChecked(true);
   }, []);
 
   return (
@@ -80,12 +88,13 @@ function App() {
         onLoginSuccess={handleLoginSuccess}
         onLogout={handleLogout}
         onUserUpdate={handleUserUpdate}
+        authChecked={authChecked}
       />
     </Router>
   );
 }
 
-function AppContent({ user, sessionToken, currentPage, currentCar, locationFilters, onNavigate, onLoginSuccess, onLogout, onUserUpdate }) {
+function AppContent({ user, sessionToken, currentPage, currentCar, locationFilters, onNavigate, onLoginSuccess, onLogout, onUserUpdate, authChecked }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -152,9 +161,18 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
     onNavigate(page, data);
   };
 
-  if ((currentPage === 'dashboard' || currentPage === 'admin') && !user) {
-    setTimeout(() => handleNavigateWrapper('login'), 0);
-    return null;
+  if ((currentPage === 'dashboard' || currentPage === 'admin')) {
+    if (!authChecked) {
+      // Still checking localStorage — we genuinely don't know yet whether
+      // this person is logged in. Render nothing for this one instant
+      // rather than guessing "not logged in" and redirecting, which was
+      // the actual cause of the crash on refresh.
+      return null;
+    }
+    if (!user) {
+      setTimeout(() => handleNavigateWrapper('login'), 0);
+      return null;
+    }
   }
 
   return (
