@@ -4,9 +4,22 @@ import './CarDeatilPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+// "10:00 AM" -> "10:00:00" so it combines with the date input into a
+// LocalDateTime string the backend (LocalDateTime.parse) can read directly:
+// e.g. "2026-06-25T10:00:00"
+const to24Hour = (timeStr) => {
+  const [time, modifier] = timeStr.split(' ');
+  let [hours, minutes] = time.split(':');
+  hours = parseInt(hours, 10);
+  if (modifier === 'PM' && hours !== 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, '0')}:${minutes}:00`;
+};
+
 const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', date: '', time: '' });
-  const [bookingStatus, setBookingStatus] = useState('');
+  const [bookingStatus, setBookingStatus] = useState(''); // '' | 'loading' | 'success' | 'error'
+  const [bookingError, setBookingError] = useState('');
   const [activeTab, setActiveTab] = useState('details');
 
   const [messageText, setMessageText] = useState('');
@@ -35,11 +48,49 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
   const handleBookingChange = e =>
     setBookingForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleBookingSubmit = e => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
     if (!user) { onNavigate('login'); return; }
-    setBookingStatus('success');
-    setBookingForm({ name: '', phone: '', date: '', time: '' });
+
+    setBookingStatus('loading');
+    setBookingError('');
+
+    try {
+      const token = sessionToken || localStorage.getItem('token');
+      const appointmentDate = `${bookingForm.date}T${to24Hour(bookingForm.time)}`;
+
+      const response = await fetch(`${API_BASE_URL}/api/service/book`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          carId: car.id,
+          serviceType: 'TEST_DRIVE',
+          appointmentDate,
+          // Name/phone from the form may differ from the account on file
+          // (e.g. booking on someone else's behalf) — ServiceAppointment
+          // has no dedicated columns for these, so fold them into notes
+          // rather than silently dropping them.
+          notes: `Contact: ${bookingForm.name || user?.username || 'N/A'}, ${bookingForm.phone || 'no phone given'}`
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBookingStatus('success');
+        setBookingForm({ name: '', phone: '', date: '', time: '' });
+      } else {
+        setBookingStatus('error');
+        setBookingError(data.message || 'Failed to book test drive. Please try again.');
+      }
+    } catch (err) {
+      console.error('Booking error:', err);
+      setBookingStatus('error');
+      setBookingError('Network error. Please try again.');
+    }
   };
 
   const handleSendMessage = async () => {
@@ -372,11 +423,14 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                   <span>✓</span>
                   <div>
                     <strong>Booking Confirmed!</strong>
-                    <p>We'll contact you to confirm your appointment.</p>
+                    <p>Your request has been sent for admin approval. We'll confirm shortly.</p>
                   </div>
                 </div>
               ) : (
                 <form className="booking-form" onSubmit={handleBookingSubmit}>
+                  {bookingStatus === 'error' && (
+                    <div className="auth-error">{bookingError}</div>
+                  )}
                   <div className="form-field">
                     <label>Your Name</label>
                     <input type="text" name="name" value={bookingForm.name} onChange={handleBookingChange} placeholder="Full name" required />
@@ -405,8 +459,8 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                       You need to <button type="button" onClick={() => onNavigate('login')}>login</button> to book.
                     </p>
                   )}
-                  <button type="submit" className="booking-submit" disabled={!user}>
-                    {user ? 'Book Test Drive' : 'Login to Book'}
+                  <button type="submit" className="booking-submit" disabled={!user || bookingStatus === 'loading'}>
+                    {bookingStatus === 'loading' ? 'Booking...' : user ? 'Book Test Drive' : 'Login to Book'}
                   </button>
                 </form>
               )}
