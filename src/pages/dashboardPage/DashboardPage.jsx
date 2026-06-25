@@ -5,7 +5,6 @@ import ChatAssistant from '../../components/tools/ChatAssistant';
 import CarRecognizer from '../../components/tools/CarRecognizer';
 import FinanceCalculator from '../../components/tools/FinanceCalculator';
 import MessagesInbox from '../../components/messaging/MessagesInbox';
-import ServiceCenter from '../../components/service/ServiceCenter';
 import TradeInCalculator from '../../components/tools/TradeInCalculator';
 import ProfileSettings from '../../components/profile/ProfileSettings';
 import { API_BASE_URL } from '../../config';
@@ -57,7 +56,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
 
   const tools = [
     { id: 'messages', label: 'Messages', icon: '💬', desc: 'Inbox & conversations' },
-    { id: 'service', label: 'Service Center', icon: '🔧', desc: 'Book test drives & service' },
     { id: 'tradein', label: 'Trade-In', icon: '🔄', desc: 'Trade your car for a new one' },
     { id: 'chat', label: 'AI Assistant', icon: '🤖', desc: 'Chat about cars & buying' },
     { id: 'recognizer', label: 'Car Recognizer', icon: '📸', desc: 'Identify car brand from photo' },
@@ -163,8 +161,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
     switch (activeTool) {
       case 'messages':
         return <MessagesInbox user={user} sessionToken={token} />;
-      case 'service':
-        return <ServiceCenter user={user} sessionToken={token} />;
       case 'tradein':
         return <TradeInCalculator user={user} sessionToken={token} />;
       case 'chat':
@@ -402,7 +398,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
               onClick={() => handleToolClick(tool.id)}
               style={{ position: 'relative' }}>
               <span>{tool.icon}</span>
-              <span>{tool.label === 'Service Center' ? 'Service' : tool.label}</span>
+              <span>{tool.label}</span>
               {tool.id === 'messages' && unreadCount > 0 && (
                 <span style={{ position: 'absolute', top: '6px', right: '6px', background: 'var(--gold)', color: 'white', fontSize: '10px', fontWeight: '700', borderRadius: '10px', padding: '1px 5px' }}>
                   {unreadCount}
