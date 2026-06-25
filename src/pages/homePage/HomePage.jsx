@@ -16,13 +16,12 @@ const TOOLS = [
   { label: 'Finance Calculator', desc: 'See real monthly repayments before you commit.' },
 ];
 
-// Drop your files at these paths inside the `public/` folder of the project
-// (e.g. public/videos/hero.mp4, public/videos/hero-poster.jpg).
-// Keep each mp4 small — aim under ~5MB for a 10-20s muted loop.
+// Drop your mp4 files at these paths inside the `public/` folder of the
+// project. Keep each one small — aim under ~5MB for a 10-20s muted loop.
+// No poster image needed — phones/touch devices/slow connections get a
+// CSS gradient fallback instead, so there's nothing extra to create.
 const HERO_VIDEO_SRC = '/videos/hero.mp4';
-const HERO_POSTER_SRC = '/videos/hero-poster.jpg';
 const CTA_VIDEO_SRC = '/videos/cta.mp4';
-const CTA_POSTER_SRC = '/videos/cta-poster.jpg';
 
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
@@ -30,15 +29,24 @@ const HomePage = ({ onNavigate }) => {
   const [activePlatform, setActivePlatform] = useState('both');
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
 
-  // Only load/play the video on wider screens, and never if the user
-  // has asked their OS for reduced motion. Mobile + reduced-motion get
-  // the static poster image instead — better for data, battery, and a11y.
+  // Only load/play the video on wide, non-touch screens with a decent
+  // connection — never on phones (any orientation), never if the user has
+  // reduced motion on, and never on a metered/slow connection if the
+  // browser reports one. Everyone else gets a CSS gradient fallback —
+  // no extra image asset required.
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isNarrow = window.innerWidth <= 768;
-    setShowVideo(!reduceMotion && !isNarrow);
+    // Coarse pointer = touch-primary input (phones/tablets), regardless of
+    // viewport width — this is what catches a phone held in landscape,
+    // which would otherwise slip past a width-only check.
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
+    const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
+
+    setShowVideo(!reduceMotion && !isNarrow && !isTouch && !isSlowOrMetered);
   }, []);
 
   useEffect(() => {
@@ -85,18 +93,13 @@ const HomePage = ({ onNavigate }) => {
               loop
               playsInline
               preload="auto"
-              poster={HERO_POSTER_SRC}
             >
               <source src={HERO_VIDEO_SRC} type="video/mp4" />
             </video>
             <div className="hp-hero-media-overlay" />
           </div>
         ) : (
-          <div
-            className="hp-hero-media hp-hero-media-static"
-            aria-hidden="true"
-            style={{ backgroundImage: `url(${HERO_POSTER_SRC})` }}
-          >
+          <div className="hp-hero-media hp-hero-media-static" aria-hidden="true">
             <div className="hp-hero-media-overlay" />
           </div>
         )}
@@ -360,18 +363,13 @@ const HomePage = ({ onNavigate }) => {
                   loop
                   playsInline
                   preload="auto"
-                  poster={CTA_POSTER_SRC}
                 >
                   <source src={CTA_VIDEO_SRC} type="video/mp4" />
                 </video>
                 <div className="hp-cta-media-overlay" />
               </div>
             ) : (
-              <div
-                className="hp-cta-media hp-cta-media-static"
-                aria-hidden="true"
-                style={{ backgroundImage: `url(${CTA_POSTER_SRC})` }}
-              >
+              <div className="hp-cta-media hp-cta-media-static" aria-hidden="true">
                 <div className="hp-cta-media-overlay" />
               </div>
             )}

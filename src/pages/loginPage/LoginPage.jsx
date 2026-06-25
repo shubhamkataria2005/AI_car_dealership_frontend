@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 import { API_BASE_URL } from '../../config';
 
-// Drop your clip at public/videos/auth.mp4 (and optionally a still frame
-// at public/videos/auth-poster.jpg for the mobile/reduced-motion fallback).
+// Drop your clip at public/videos/auth.mp4. No poster image needed —
+// phones/touch devices/slow connections get a CSS gradient fallback.
 const AUTH_VIDEO_SRC = '/videos/auth.mp4';
-const AUTH_POSTER_SRC = '/videos/auth-poster.jpg';
 
 const Login = ({ onLoginSuccess, onNavigate }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -13,14 +12,19 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
   const [error, setError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
 
-  // Same gating rule as the homepage videos: skip on narrow screens and
-  // when the user has asked their OS for reduced motion.
+  // Same gating rule as the homepage videos: skip on phones (any
+  // orientation — checked via coarse pointer, not just width), reduced
+  // motion, and slow/metered connections.
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isNarrow = window.innerWidth <= 768;
-    setShowVideo(!reduceMotion && !isNarrow);
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
+    const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
+
+    setShowVideo(!reduceMotion && !isNarrow && !isTouch && !isSlowOrMetered);
   }, []);
 
   const handleChange = e => { 
@@ -66,17 +70,12 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
           loop
           playsInline
           preload="auto"
-          poster={AUTH_POSTER_SRC}
         >
           <source src={AUTH_VIDEO_SRC} type="video/mp4" />
         </video>
       </div>
     ) : (
-      <div
-        className="auth-panel-media auth-panel-media-static"
-        aria-hidden="true"
-        style={{ backgroundImage: `url(${AUTH_POSTER_SRC})` }}
-      />
+      <div className="auth-panel-media auth-panel-media-static" aria-hidden="true" />
     )
   );
 

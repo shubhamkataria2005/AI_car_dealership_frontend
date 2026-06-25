@@ -51,6 +51,14 @@ function App() {
     setCurrentPage('home');
   };
 
+  // NEW: called after a successful profile edit (username/phone) so the
+  // change shows up immediately in the Navbar/Dashboard sidebar without
+  // requiring a refresh or re-login.
+  const handleUserUpdate = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
@@ -71,12 +79,13 @@ function App() {
         onNavigate={handleNavigate}
         onLoginSuccess={handleLoginSuccess}
         onLogout={handleLogout}
+        onUserUpdate={handleUserUpdate}
       />
     </Router>
   );
 }
 
-function AppContent({ user, sessionToken, currentPage, currentCar, locationFilters, onNavigate, onLoginSuccess, onLogout }) {
+function AppContent({ user, sessionToken, currentPage, currentCar, locationFilters, onNavigate, onLoginSuccess, onLogout, onUserUpdate }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -210,6 +219,7 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
                   sessionToken={sessionToken}
                   onLogout={onLogout}
                   onNavigate={handleNavigateWrapper}
+                  onUserUpdate={onUserUpdate}
                 /> :
                 <LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />
             }

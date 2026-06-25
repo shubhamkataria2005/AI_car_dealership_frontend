@@ -7,9 +7,10 @@ import FinanceCalculator from '../../components/tools/FinanceCalculator';
 import MessagesInbox from '../../components/messaging/MessagesInbox';
 import ServiceCenter from '../../components/service/ServiceCenter';
 import TradeInCalculator from '../../components/tools/TradeInCalculator';
+import ProfileSettings from '../../components/profile/ProfileSettings';
 import { API_BASE_URL } from '../../config';
 
-const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
+const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) => {
   const [activeTool, setActiveTool] = useState('chat');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showListCarForm, setShowListCarForm] = useState(false);
@@ -29,11 +30,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
   const isSalesEmployee = user?.role === 'SALES_EMPLOYEE' || user?.isEmployee || isAdmin;
 
   useEffect(() => {
-    console.log('Dashboard loaded with user:', user);
-    console.log('Is Sales Employee:', isSalesEmployee);
-    console.log('User role:', user?.role);
     if (!user && !token) {
-      console.log('No user found, redirecting to login');
       onNavigate('login');
     }
   }, [user, token, onNavigate]);
@@ -176,6 +173,8 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
         return <CarRecognizer sessionToken={token} user={user} />;
       case 'finance':
         return <FinanceCalculator />;
+      case 'profile':
+        return <ProfileSettings user={user} sessionToken={token} onUserUpdate={onUserUpdate} />;
       default:
         return <ChatAssistant user={user} sessionToken={token} />;
     }
@@ -354,15 +353,21 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
               </button>
             ))}
 
+            <p className="dash-nav-label">Account</p>
+            <button
+              className={`dash-nav-link ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+              onClick={() => handleToolClick('profile')}
+            >
+              <span>👤</span>
+              <span>Profile</span>
+            </button>
+
             {isAdmin && (
               <>
                 <p className="dash-nav-label">Admin</p>
                 <button
                   className="dash-nav-link"
-                  onClick={() => {
-                    console.log('Navigating to admin panel');
-                    onNavigate('admin');
-                  }}
+                  onClick={() => onNavigate('admin')}
                 >
                   Admin Panel
                 </button>
@@ -405,6 +410,10 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
               )}
             </button>
           ))}
+          <button className={`mobile-tab ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+            onClick={() => handleToolClick('profile')}>
+            <span>👤</span><span>Profile</span>
+          </button>
           {isAdmin && (
             <button
               className="mobile-tab"
@@ -432,6 +441,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate }) => {
               {isSalesEmployee && (
                 <button className="mobile-menu-link" onClick={() => { setShowDealershipForm(true); setShowListCarForm(false); setActiveTool(null); setMobileMenuOpen(false); }}>Add Dealership Car</button>
               )}
+              <button className="mobile-menu-link" onClick={() => { handleToolClick('profile'); setMobileMenuOpen(false); }}>Profile</button>
               {isAdmin && (
                 <button
                   className="mobile-menu-link"

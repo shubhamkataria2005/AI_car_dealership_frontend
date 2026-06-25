@@ -3,11 +3,12 @@ import '../loginPage/LoginPage.css';
 import { API_BASE_URL } from '../../config';
 
 // Same clip as the login page — drop it once at public/videos/auth.mp4.
+// No poster image needed — phones/touch devices/slow connections get a
+// CSS gradient fallback.
 const AUTH_VIDEO_SRC = '/videos/auth.mp4';
-const AUTH_POSTER_SRC = '/videos/auth-poster.jpg';
 
 const Register = ({ onLoginSuccess, onNavigate }) => {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', email: '', password: '', phoneNumber: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -18,7 +19,11 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isNarrow = window.innerWidth <= 768;
-    setShowVideo(!reduceMotion && !isNarrow);
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
+    const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
+
+    setShowVideo(!reduceMotion && !isNarrow && !isTouch && !isSlowOrMetered);
   }, []);
 
   const handleChange = e => { 
@@ -75,17 +80,12 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
           loop
           playsInline
           preload="auto"
-          poster={AUTH_POSTER_SRC}
         >
           <source src={AUTH_VIDEO_SRC} type="video/mp4" />
         </video>
       </div>
     ) : (
-      <div
-        className="auth-panel-media auth-panel-media-static"
-        aria-hidden="true"
-        style={{ backgroundImage: `url(${AUTH_POSTER_SRC})` }}
-      />
+      <div className="auth-panel-media auth-panel-media-static" aria-hidden="true" />
     )
   );
 
@@ -177,6 +177,18 @@ const Register = ({ onLoginSuccess, onNavigate }) => {
               onChange={handleChange} 
               placeholder="At least 6 characters" 
               required 
+              disabled={loading} 
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="phoneNumber">Phone Number <span style={{ opacity: 0.6, textTransform: 'none' }}>(optional)</span></label>
+            <input 
+              id="phoneNumber" 
+              type="tel" 
+              name="phoneNumber" 
+              value={formData.phoneNumber} 
+              onChange={handleChange} 
+              placeholder="021 555 0123" 
               disabled={loading} 
             />
           </div>
