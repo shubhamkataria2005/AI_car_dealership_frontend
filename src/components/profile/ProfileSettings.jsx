@@ -1,6 +1,6 @@
 // src/components/profile/ProfileSettings.jsx
 import React, { useState, useRef } from 'react';
-import '../tools/Tools.css';
+import './ProfileSettings.css';
 import { API_BASE_URL } from '../../config';
 
 // Resizes/compresses an image file client-side before it's ever sent to the
@@ -38,7 +38,7 @@ const ProfileSettings = ({ user, sessionToken, onUserUpdate }) => {
   const [username, setUsername] = useState(user?.username || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
   const [photoPreview, setPhotoPreview] = useState(user?.profilePhoto || null);
-  const [photoChanged, setPhotoChanged] = useState(false); // did the user pick/remove a photo this session?
+  const [photoChanged, setPhotoChanged] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' | 'error'
@@ -85,7 +85,7 @@ const ProfileSettings = ({ user, sessionToken, onUserUpdate }) => {
     try {
       const body = { username, phoneNumber };
       if (photoChanged) {
-        body.profilePhoto = photoPreview || ''; // empty string tells the backend to clear it
+        body.profilePhoto = photoPreview || '';
       }
 
       const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
@@ -123,108 +123,99 @@ const ProfileSettings = ({ user, sessionToken, onUserUpdate }) => {
   };
 
   return (
-    <div className="tool-panel">
-      <div className="tool-header">
+    <div className="profile-panel">
+      <div className="profile-header">
         <h2>Profile</h2>
         <p>Manage your name, photo, and the contact details buyers see on your listings</p>
       </div>
 
-      <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
-        <form onSubmit={handleSave} className="finance-form" style={{ maxWidth: 420 }}>
+      <div className="profile-body">
+        <form onSubmit={handleSave} className="profile-form">
 
           {/* ── Photo ── */}
-          <div className="form-field">
-            <label>Profile Photo</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="profile-photo-section">
+            <div className="profile-avatar-wrap">
               <div
-                style={{
-                  width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
-                  background: photoPreview ? `center/cover no-repeat url(${photoPreview})` : 'var(--accent)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--accent-ink)', fontFamily: 'var(--font-display)',
-                  fontWeight: 700, fontSize: '1.3rem', border: '1px solid var(--border2)'
-                }}
+                className="profile-avatar"
+                style={photoPreview ? { backgroundImage: `url(${photoPreview})` } : undefined}
               >
                 {!photoPreview && (username?.charAt(0)?.toUpperCase() || 'U')}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  style={{ padding: '8px 16px', fontSize: '0.72rem' }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
+              <button
+                type="button"
+                className="profile-avatar-edit-btn"
+                onClick={() => fileInputRef.current?.click()}
+                title="Change photo"
+                aria-label="Change photo"
+              >
+                ✎
+              </button>
+            </div>
+
+            <div className="profile-photo-actions">
+              <div className="profile-photo-buttons">
+                <button type="button" className="profile-photo-btn" onClick={() => fileInputRef.current?.click()}>
                   {photoPreview ? 'Change Photo' : 'Upload Photo'}
                 </button>
                 {photoPreview && (
-                  <button
-                    type="button"
-                    onClick={handleRemovePhoto}
-                    style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textAlign: 'left' }}
-                  >
-                    Remove photo
+                  <button type="button" className="profile-photo-remove" onClick={handleRemovePhoto}>
+                    Remove
                   </button>
                 )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoSelect}
-                  style={{ display: 'none' }}
-                />
               </div>
+              <p className="profile-photo-hint">JPG or PNG — resized automatically</p>
             </div>
-          </div>
 
-          <div className="form-field">
-            <label htmlFor="profile-username">Username</label>
             <input
-              id="profile-username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your name"
-              minLength={3}
-              maxLength={50}
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'var(--surface2)', color: 'var(--text)' }}
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoSelect}
+              hidden
             />
           </div>
 
-          <div className="form-field">
-            <label>Email</label>
-            <input type="email" value={user?.email || ''} disabled style={{ width: '100%', padding: '11px 13px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'var(--surface3)', color: 'var(--muted)' }} />
-          </div>
+          <div className="profile-divider" />
 
-          <div className="form-field">
-            <label htmlFor="profile-phone">Phone Number</label>
-            <input
-              id="profile-phone"
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="021 555 0123"
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'var(--surface2)', color: 'var(--text)' }}
-            />
+          {/* ── Fields ── */}
+          <div className="profile-fields">
+            <div className="profile-field">
+              <label htmlFor="profile-username">Username</label>
+              <input
+                id="profile-username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Your name"
+                minLength={3}
+                maxLength={50}
+              />
+            </div>
+
+            <div className="profile-field">
+              <label htmlFor="profile-email">Email</label>
+              <input id="profile-email" type="email" value={user?.email || ''} disabled />
+              <span className="profile-field-note">Email can't be changed here</span>
+            </div>
+
+            <div className="profile-field">
+              <label htmlFor="profile-phone">Phone Number</label>
+              <input
+                id="profile-phone"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="021 555 0123"
+              />
+              <span className="profile-field-note">Shown to buyers on your car listings</span>
+            </div>
           </div>
 
           {message && (
-            <div
-              style={{
-                marginTop: '4px',
-                padding: '12px 14px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.86rem',
-                background: messageType === 'success' ? 'rgba(52,211,153,0.1)' : 'rgba(255,92,108,0.1)',
-                border: messageType === 'success' ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,92,108,0.25)',
-                color: messageType === 'success' ? 'var(--green)' : '#FF8A95',
-                lineHeight: 1.5
-              }}
-            >
-              {message}
-            </div>
+            <div className={`profile-message ${messageType}`}>{message}</div>
           )}
 
-          <button type="submit" className="booking-submit" disabled={loading}>
+          <button type="submit" className="profile-save-btn" disabled={loading}>
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
