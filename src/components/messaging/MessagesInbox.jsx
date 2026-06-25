@@ -15,6 +15,7 @@ const MessagesInbox = ({ user, sessionToken }) => {
   const stompClient = useRef(null);
   const messagesEndRef = useRef(null);
   const activeConvoRef = useRef(null);
+  const isFirstMessagesRender = useRef(true);
 
   const token = sessionToken || localStorage.getItem('token');
 
@@ -26,6 +27,14 @@ const MessagesInbox = ({ user, sessionToken }) => {
   }, [user]);
 
   useEffect(() => {
+    // Skip the very first run for the same reason as ChatAssistant — opening
+    // a conversation with few/no messages shouldn't have nowhere-to-go
+    // scroll requests bubble up and drag the whole page down. Only
+    // auto-scroll once a real new message arrives after that.
+    if (isFirstMessagesRender.current) {
+      isFirstMessagesRender.current = false;
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -70,6 +79,7 @@ const MessagesInbox = ({ user, sessionToken }) => {
 
   const openConversation = async (otherUserId) => {
     setActiveConvo(otherUserId);
+    isFirstMessagesRender.current = true; // reset so the new conversation's load doesn't auto-scroll the page either
     try {
       const res = await fetch(`${API_BASE_URL}/api/messages/conversation/${otherUserId}`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }

@@ -10,8 +10,18 @@ const ChatAssistant = ({ user, sessionToken }) => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    // Skip the very first run — there's nothing to "scroll to the latest
+    // message" for yet, and on a short initial message list this scroll
+    // request has nowhere to go inside the chat panel itself, so it bubbles
+    // up and scrolls the whole page down instead. Only auto-scroll once a
+    // real new message gets added after the page has already loaded.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
