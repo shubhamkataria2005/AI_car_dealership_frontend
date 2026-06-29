@@ -19,12 +19,10 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isNarrow = window.innerWidth <= 768;
-    const isTouch = window.matchMedia('(pointer: coarse)').matches;
     const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
     const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
 
-    setShowVideo(!reduceMotion && !isNarrow && !isTouch && !isSlowOrMetered);
+    setShowVideo(!reduceMotion && !isSlowOrMetered);
   }, []);
 
   const handleChange = e => { 

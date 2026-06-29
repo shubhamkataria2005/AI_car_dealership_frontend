@@ -1,6 +1,5 @@
 /* ============================================================
-   Inventory — "Showroom at night"
-   Class names match InventoryPages.jsx exactly (CSS-only restyle).
+   Inventory — "Showroom at night" Enhanced
    ============================================================ */
 
 .inventory-page { padding-bottom: 100px; background: var(--bg); }
@@ -14,8 +13,16 @@
 .inventory-header::before {
   content: ''; position: absolute; top: -160px; right: -120px;
   width: 540px; height: 540px;
-  background: radial-gradient(circle, rgba(255,122,26,0.12) 0%, transparent 68%);
+  background: radial-gradient(circle, rgba(255,122,26,0.14) 0%, rgba(255,80,0,0.06) 40%, transparent 68%);
   pointer-events: none;
+  animation: blob-drift 20s ease-in-out infinite;
+}
+.inventory-header::after {
+  content: ''; position: absolute; bottom: -80px; left: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,180,74,0.08) 0%, transparent 65%);
+  pointer-events: none;
+  animation: blob-drift-2 25s ease-in-out infinite;
 }
 .inventory-header-inner {
   position: relative; z-index: 1;
@@ -28,17 +35,28 @@
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);
   margin-bottom: 14px;
 }
-.inventory-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
-.inventory-header h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.045em; margin: 0; }
+.inventory-eyebrow::before {
+  content: ''; width: 28px; height: 1px; background: var(--gradient-accent);
+}
+.inventory-header h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.045em; margin: 0;
+  background: linear-gradient(135deg, #F4F6F8 0%, #F4F6F8 50%, #FF9A45 80%, #FF7A1A 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 .inventory-count { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
 .inventory-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .inventory-source-badges { display: flex; gap: 10px; }
 .source-badge-small {
   padding: 5px 13px; border-radius: 100px;
   font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em;
+  transition: all 0.2s ease;
 }
 .source-badge-small.marketplace { background: rgba(255,255,255,0.06); color: var(--muted2); border: 1px solid var(--border2); }
-.source-badge-small.dealership { background: rgba(255,122,26,0.14); color: var(--accent); border: 1px solid rgba(255,122,26,0.28); }
+.source-badge-small.dealership {
+  background: rgba(255,122,26,0.14); color: var(--accent);
+  border: 1px solid rgba(255,122,26,0.28);
+  box-shadow: 0 2px 10px rgba(255,122,26,0.15);
+}
 
 /* ── Layout ── */
 .inventory-layout {
@@ -46,13 +64,21 @@
   align-items: start;
 }
 
-/* ── Filters ── */
+/* ── Filters sidebar ── */
 .filters-sidebar {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 26px;
   position: sticky; top: 88px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.filters-sidebar h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 26px; }
+.filters-sidebar:hover {
+  border-color: var(--border2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.filters-sidebar h3 {
+  font-family: var(--font-display); font-size: 1.05rem; font-weight: 700;
+  letter-spacing: -0.02em; margin-bottom: 26px;
+}
 .filter-group { margin-bottom: 26px; }
 .filter-group > label {
   display: block; font-family: var(--font-mono); font-size: 0.64rem;
@@ -62,10 +88,13 @@
   width: 100%; padding: 11px 13px; border: 1px solid var(--border);
   border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 0.9rem;
   color: var(--text); background: var(--surface2); outline: none;
-  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease), box-shadow 0.25s ease;
 }
 .filter-group input[type="text"]::placeholder { color: var(--muted); }
-.filter-group input[type="text"]:focus { border-color: var(--accent); background: var(--surface3); }
+.filter-group input[type="text"]:focus {
+  border-color: var(--accent); background: var(--surface3);
+  box-shadow: 0 0 0 3px rgba(255,122,26,0.12);
+}
 
 .filter-chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .filter-chip {
@@ -74,10 +103,16 @@
   color: var(--muted2); transition: all 0.2s var(--ease);
 }
 .filter-chip:hover { border-color: var(--border2); color: var(--text); }
-.filter-chip.active { background: rgba(255,122,26,0.14); border-color: rgba(255,122,26,0.4); color: var(--accent); }
+.filter-chip.active {
+  background: rgba(255,122,26,0.14); border-color: rgba(255,122,26,0.4); color: var(--accent);
+  box-shadow: 0 2px 10px rgba(255,122,26,0.15);
+}
 
 .price-slider { width: 100%; accent-color: var(--accent); margin-top: 8px; cursor: pointer; height: 4px; }
-.price-range-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); margin-top: 8px; }
+.price-range-labels {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); margin-top: 8px;
+}
 
 .reset-filters {
   width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border2);
@@ -85,7 +120,7 @@
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
   transition: all 0.25s var(--ease);
 }
-.reset-filters:hover { border-color: var(--red); color: var(--red); }
+.reset-filters:hover { border-color: var(--red); color: var(--red); background: rgba(255,92,108,0.06); }
 
 /* ── Main / toolbar ── */
 .inventory-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
@@ -93,60 +128,91 @@
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding: 14px 18px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius);
+  transition: border-color 0.3s ease;
 }
+.inventory-toolbar:hover { border-color: var(--border2); }
 .results-count { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted2); }
 .sort-select {
   padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-family: var(--font-body); font-size: 0.82rem; color: var(--text);
   background: var(--surface2); cursor: pointer; outline: none;
+  transition: border-color 0.2s ease;
 }
-.sort-select:focus { border-color: var(--accent); }
+.sort-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,26,0.1); }
 
-/* ── Grid + cards (match homepage card language) ── */
+/* ── Grid + cards ── */
 .inventory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 
 .car-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+  position: relative;
   transition: transform 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
 }
-.car-card:hover { transform: translateY(-6px); border-color: var(--border3); box-shadow: var(--shadow-lg); }
+.car-card::before {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  transform: translateX(-100%) skewX(-15deg);
+}
+.car-card:hover::before {
+  animation: shimmer-slide 0.65s var(--ease) forwards;
+}
+.car-card:hover {
+  border-color: rgba(255,122,26,0.3);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,122,26,0.12), 0 0 35px rgba(255,122,26,0.10);
+}
 .car-card-image { position: relative; aspect-ratio: 16/10; overflow: hidden; background: var(--surface2); }
-.car-card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease); }
-.car-card:hover .car-card-image img { transform: scale(1.06); }
+.car-card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease), filter 0.4s ease; }
+.car-card:hover .car-card-image img { transform: scale(1.07); filter: brightness(1.05) saturate(1.1); }
 
+/* Badges */
 .car-badge {
   position: absolute; top: 12px; left: 12px;
-  padding: 5px 11px; border-radius: 100px; backdrop-filter: blur(6px);
-  background: rgba(10,12,16,0.6); border: 1px solid var(--border2);
+  padding: 5px 11px; border-radius: 100px; backdrop-filter: blur(8px);
+  background: rgba(10,12,16,0.65); border: 1px solid var(--border2);
   font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
-  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text);
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); z-index: 2;
 }
 .source-badge {
   position: absolute; top: 12px; right: 12px;
-  padding: 5px 11px; border-radius: 100px; z-index: 2; backdrop-filter: blur(6px);
+  padding: 5px 11px; border-radius: 100px; z-index: 2; backdrop-filter: blur(8px);
   font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
   letter-spacing: 0.06em; text-transform: uppercase;
 }
-.source-badge.dealership { background: rgba(255,122,26,0.16); color: var(--accent); border: 1px solid rgba(255,122,26,0.3); }
+.source-badge.dealership {
+  background: rgba(255,122,26,0.18); color: var(--accent);
+  border: 1px solid rgba(255,122,26,0.35);
+  box-shadow: 0 2px 8px rgba(255,122,26,0.2);
+}
 .source-badge.marketplace { background: rgba(255,255,255,0.08); color: var(--muted2); border: 1px solid var(--border2); }
 .inspection-badge {
-  position: absolute; bottom: 12px; right: 12px; z-index: 2; backdrop-filter: blur(6px);
+  position: absolute; bottom: 12px; right: 12px; z-index: 2; backdrop-filter: blur(8px);
   padding: 5px 11px; border-radius: 100px;
   font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.04em;
   background: rgba(52,211,153,0.16); color: var(--green); border: 1px solid rgba(52,211,153,0.3);
 }
 
+/* Card body */
 .car-card-body { padding: 22px; display: flex; flex-direction: column; gap: 12px; }
 .car-card-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.car-card-title h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; color: var(--text); }
-.car-price { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: var(--accent); white-space: nowrap; letter-spacing: -0.02em; }
+.car-card-title h3 {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1.15; color: var(--text);
+}
+.car-price {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 800;
+  white-space: nowrap; letter-spacing: -0.02em;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 .car-card-specs { display: flex; gap: 6px; flex-wrap: wrap; }
 .car-card-specs span {
   font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted2);
   background: var(--surface2); border: 1px solid var(--border);
   padding: 4px 9px; border-radius: 6px;
+  transition: border-color 0.2s ease;
 }
+.car-card:hover .car-card-specs span { border-color: rgba(255,122,26,0.18); }
 .car-card-stock { font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); padding-top: 8px; border-top: 1px solid var(--border); }
 .car-card-footer {
   display: flex; align-items: center; justify-content: space-between;
@@ -156,13 +222,14 @@
   font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--muted2); background: none; border: none;
   display: flex; align-items: center; gap: 6px;
+  transition: color 0.25s ease;
 }
 .car-card-btn::after { content: '→'; transition: transform 0.3s var(--ease); }
 .car-card:hover .car-card-btn { color: var(--accent); }
-.car-card:hover .car-card-btn::after { transform: translateX(4px); }
+.car-card:hover .car-card-btn::after { transform: translateX(5px); }
 .car-card-year { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
 
-/* ── Empty / error / loading ── */
+/* ── Empty / error ── */
 .no-results {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; text-align: center; padding: 80px 24px;
@@ -185,4 +252,5 @@
   .inventory-header { padding: 40px 0 32px; }
   .inventory-header-inner { flex-direction: column; align-items: flex-start; }
   .inventory-stats { align-items: flex-start; }
+  .inventory-header::before, .inventory-header::after { display: none; }
 }

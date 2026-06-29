@@ -1,6 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import Navbar from './components/navbar/Navbar.jsx';
 import Footer from './components/footer/Footer.jsx';
 import HomePage from './pages/homePage/HomePage.jsx';
@@ -184,6 +185,15 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
         onLogout={onLogout}
       />
       <main className="main-content">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}
+          >
         <Routes>
           <Route path="/" element={<HomePage onNavigate={handleNavigateWrapper} />} />
 
@@ -258,6 +268,8 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
           <Route path="/login" element={<LoginPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
           <Route path="/register" element={<RegisterPage onLoginSuccess={onLoginSuccess} onNavigate={handleNavigateWrapper} />} />
         </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer onNavigate={handleNavigateWrapper} />
     </div>

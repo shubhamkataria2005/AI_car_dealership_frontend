@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './InventoryPage.css';
 import { API_BASE_URL } from '../../config';
+import { motion } from 'motion/react';
 
 const InventoryPage = ({ onNavigate, locationFilters }) => {
   const [cars, setCars] = useState([]);
@@ -356,11 +357,17 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
           {!loading && filtered.length > 0 && (
             <div className="inventory-grid">
-              {filtered.map(car => (
-                <div
+              {filtered.map((car, i) => (
+                <motion.div
                   key={car.id}
                   className="car-card"
                   onClick={() => onNavigate('car-detail', car)}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1], delay: Math.min(i % 4, 3) * 0.08 }}
+                  whileHover={{ y: -9, scale: 1.012 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <div className="car-card-image">
                     <img
@@ -403,7 +410,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                       <span className="car-card-year">{car.year}</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}

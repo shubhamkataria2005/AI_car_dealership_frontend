@@ -3,6 +3,14 @@ import React, { useState, useEffect } from 'react';
 import './HomePage.css';
 import { api } from '../../services/api';
 import Reveal from '../../components/ui/Reveal';
+import { motion } from 'motion/react';
+
+const springCard = { type: 'spring', stiffness: 300, damping: 24 };
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 28 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay },
+});
 
 const MARQUEE_MAKES = [
   'Toyota', 'Mazda', 'BMW', 'Tesla', 'Ford', 'Honda',
@@ -29,24 +37,17 @@ const HomePage = ({ onNavigate }) => {
   const [activePlatform, setActivePlatform] = useState('both');
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
 
-  // Only load/play the video on wide, non-touch screens with a decent
-  // connection — never on phones (any orientation), never if the user has
-  // reduced motion on, and never on a metered/slow connection if the
-  // browser reports one. Everyone else gets a CSS gradient fallback —
-  // no extra image asset required.
+  // Show video on all devices unless the user has reduced-motion on or
+  // is on a slow/metered connection. Mobile browsers support autoplay
+  // for muted+playsInline videos so there's no need to block them.
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isNarrow = window.innerWidth <= 768;
-    // Coarse pointer = touch-primary input (phones/tablets), regardless of
-    // viewport width — this is what catches a phone held in landscape,
-    // which would otherwise slip past a width-only check.
-    const isTouch = window.matchMedia('(pointer: coarse)').matches;
     const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
     const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
 
-    setShowVideo(!reduceMotion && !isNarrow && !isTouch && !isSlowOrMetered);
+    setShowVideo(!reduceMotion && !isSlowOrMetered);
   }, []);
 
   useEffect(() => {
@@ -106,30 +107,30 @@ const HomePage = ({ onNavigate }) => {
         <div className="hp-hero-glow" aria-hidden="true" />
         <div className="hp-hero-sweep" aria-hidden="true" />
         <div className="container hp-hero-inner">
-          <Reveal as="span" className="hp-eyebrow" delay={0}>
+          <motion.span className="hp-eyebrow" {...fadeUp(0)}>
             Auckland · buy, sell &amp; trade
-          </Reveal>
+          </motion.span>
 
-          <Reveal as="h1" className="hp-hero-title" delay={80}>
+          <motion.h1 className="hp-hero-title" {...fadeUp(0.1)}>
             Find your<br />
             <span className="hp-paren">(next)</span> car.
-          </Reveal>
+          </motion.h1>
 
-          <Reveal as="p" className="hp-hero-sub" delay={200}>
+          <motion.p className="hp-hero-sub" {...fadeUp(0.22)}>
             Private-seller listings and fully inspected dealership cars, in one place.
             Browse, message the seller, sort your finance — without the showroom pressure.
-          </Reveal>
+          </motion.p>
 
-          <Reveal className="hp-hero-actions" delay={300}>
+          <motion.div className="hp-hero-actions" {...fadeUp(0.34)}>
             <button className="btn-primary" onClick={() => onNavigate('inventory')}>
               Browse all cars
             </button>
             <button className="btn-outline" onClick={() => onNavigate('register')}>
               Sell your car
             </button>
-          </Reveal>
+          </motion.div>
 
-          <Reveal className="hp-hero-meta" delay={420}>
+          <motion.div className="hp-hero-meta" {...fadeUp(0.46)}>
             <div className="hp-meta-item">
               <strong>{loading ? '—' : `${allCars.length}+`}</strong>
               <span>cars available</span>
@@ -144,7 +145,7 @@ const HomePage = ({ onNavigate }) => {
               <strong>10yr</strong>
               <span>in business</span>
             </div>
-          </Reveal>
+          </motion.div>
         </div>
 
         {/* Ambient marquee — the signature */}
@@ -242,37 +243,46 @@ const HomePage = ({ onNavigate }) => {
               <div className="hp-cars-empty">No cars in this category yet.</div>
             ) : (
               displayedCars.map((car, i) => (
-                <Reveal key={car.id} delay={i * 70}>
-                  <article className="hp-card" onClick={() => onNavigate('car-detail', car)}>
-                    <div className="hp-card-img">
-                      <img
-                        src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700&q=80'}
-                        alt={`${car.year} ${car.make} ${car.model}`}
-                        loading="lazy"
-                      />
-                      {car.carSource === 'DEALERSHIP' && <span className="hp-tag hp-tag-dealer">Dealership</span>}
-                      {car.carSource === 'MARKETPLACE' && <span className="hp-tag hp-tag-market">Private seller</span>}
-                      {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
-                        <span className="hp-tag-inspected">✓ Inspected</span>
-                      )}
+                <motion.article
+                  key={car.id}
+                  className="hp-card"
+                  onClick={() => onNavigate('car-detail', car)}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 }}
+                  whileHover={{ y: -10, scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{ transition: 'border-color 0.4s, box-shadow 0.4s' }}
+                >
+                  <div className="hp-card-img">
+                    <img
+                      src={car.imageUrl || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700&q=80'}
+                      alt={`${car.year} ${car.make} ${car.model}`}
+                      loading="lazy"
+                    />
+                    {car.carSource === 'DEALERSHIP' && <span className="hp-tag hp-tag-dealer">Dealership</span>}
+                    {car.carSource === 'MARKETPLACE' && <span className="hp-tag hp-tag-market">Private seller</span>}
+                    {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
+                      <span className="hp-tag-inspected">✓ Inspected</span>
+                    )}
+                  </div>
+                  <div className="hp-card-body">
+                    <div className="hp-card-top">
+                      <h3>{car.make} {car.model}</h3>
+                      <span className="hp-card-price">${car.price?.toLocaleString()}</span>
                     </div>
-                    <div className="hp-card-body">
-                      <div className="hp-card-top">
-                        <h3>{car.make} {car.model}</h3>
-                        <span className="hp-card-price">${car.price?.toLocaleString()}</span>
-                      </div>
-                      <div className="hp-card-specs">
-                        <span>{car.year}</span>
-                        <span>{car.mileage?.toLocaleString()} km</span>
-                        <span>{car.fuel}</span>
-                        <span>{car.transmission}</span>
-                      </div>
-                      <div className="hp-card-foot">
-                        View details <span className="hp-arrow">→</span>
-                      </div>
+                    <div className="hp-card-specs">
+                      <span>{car.year}</span>
+                      <span>{car.mileage?.toLocaleString()} km</span>
+                      <span>{car.fuel}</span>
+                      <span>{car.transmission}</span>
                     </div>
-                  </article>
-                </Reveal>
+                    <div className="hp-card-foot">
+                      View details <span className="hp-arrow">→</span>
+                    </div>
+                  </div>
+                </motion.article>
               ))
             )}
           </div>
