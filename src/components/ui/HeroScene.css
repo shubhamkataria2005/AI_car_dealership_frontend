@@ -1,0 +1,171 @@
+/* ============================================================
+   HeroScene — cinematic 3D animated background
+   Particle canvas · SVG wireframes · Perspective grid
+   ============================================================ */
+
+.hs-root {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ─── Particle canvas ─── */
+.hs-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ─── Perspective receding grid ─── */
+.hs-grid {
+  position: absolute;
+  bottom: -5%;
+  left: 50%;
+  transform: translateX(-50%) perspective(480px) rotateX(72deg);
+  width: 240%;
+  height: 55%;
+  background-image:
+    linear-gradient(rgba(255, 122, 26, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 122, 26, 0.07) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image:
+    radial-gradient(ellipse 65% 90% at 50% 100%, black 25%, transparent 78%);
+  mask-image:
+    radial-gradient(ellipse 65% 90% at 50% 100%, black 25%, transparent 78%);
+  pointer-events: none;
+}
+
+/* ─── SVG wireframe shapes ─── */
+.hs-shape {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Large orbital ring — top right */
+.hs-s1 {
+  width: clamp(280px, 38vw, 500px);
+  height: clamp(280px, 38vw, 500px);
+  right: -6%;
+  top: -10%;
+}
+
+/* Hexagon — left mid */
+.hs-s2 {
+  width: clamp(160px, 22vw, 280px);
+  height: clamp(160px, 22vw, 280px);
+  left: 3%;
+  top: 28%;
+}
+
+/* Square/diamond — bottom centre-right */
+.hs-s3 {
+  width: clamp(100px, 14vw, 180px);
+  height: clamp(100px, 14vw, 180px);
+  right: 22%;
+  bottom: 18%;
+}
+
+/* Dashed ring — small, upper left */
+.hs-s4 {
+  width: clamp(80px, 10vw, 140px);
+  height: clamp(80px, 10vw, 140px);
+  left: 16%;
+  top: 8%;
+}
+
+/* ─── Orbiting accent dot (circles shape-1) ─── */
+.hs-orbiter {
+  position: absolute;
+  right: calc(-6% + clamp(140px, 19vw, 250px) - 5px);
+  top: calc(-10% + clamp(140px, 19vw, 250px) - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px 4px rgba(255, 122, 26, 0.6),
+              0 0 28px 8px rgba(255, 122, 26, 0.25);
+  transform-origin:
+    calc(clamp(140px, 19vw, 250px) * -1 + 5px)
+    calc(clamp(140px, 19vw, 250px) * -1 + 5px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ─── Ambient glows ─── */
+.hs-glow-a {
+  position: absolute;
+  top: -5%;
+  right: 0%;
+  width: 55vw;
+  height: 55vw;
+  max-width: 700px;
+  max-height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 122, 26, 0.12) 0%,
+    rgba(255, 122, 26, 0.04) 40%,
+    transparent 68%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+  animation: pulse-glow 9s ease-in-out infinite;
+}
+
+.hs-glow-b {
+  position: absolute;
+  bottom: 10%;
+  left: -5%;
+  width: 35vw;
+  height: 35vw;
+  max-width: 420px;
+  max-height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 180, 74, 0.07) 0%,
+    transparent 65%
+  );
+  filter: blur(30px);
+  pointer-events: none;
+  animation: pulse-glow 14s ease-in-out infinite reverse;
+}
+
+/* ─── Vignette + bottom fade ─── */
+.hs-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 50%, transparent 45%, rgba(10, 12, 16, 0.55) 100%);
+  pointer-events: none;
+}
+
+.hs-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38%;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hs-shape,
+  .hs-orbiter,
+  .hs-glow-a,
+  .hs-glow-b { animation: none !important; }
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 768px) {
+  .hs-s2, .hs-s3 { display: none; }
+  .hs-orbiter     { display: none; }
+  .hs-grid        { height: 40%; }
+}

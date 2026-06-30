@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './HomePage.css';
 import { api } from '../../services/api';
 import Reveal from '../../components/ui/Reveal';
+import HeroScene from '../../components/ui/HeroScene';
 import { motion, useMotionValue, useSpring, useTransform, useInView } from 'motion/react';
 
 // ─── 3D tilt card ────────────────────────────────────────────────────────────
@@ -134,22 +135,11 @@ const SERVICES = [
   },
 ];
 
-const HERO_VIDEO_SRC = '/videos/hero.mp4';
-const CTA_VIDEO_SRC  = '/videos/cta.mp4';
-
 // ─── Component ───────────────────────────────────────────────────────────────
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
-  const [showVideo, setShowVideo] = useState(false);
-
-  useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
-    const slow = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
-    setShowVideo(!reduceMotion && !slow);
-  }, []);
 
   useEffect(() => {
     api.getAllCars()
@@ -176,37 +166,7 @@ const HomePage = ({ onNavigate }) => {
 
       {/* ─────────────────────────── HERO ─────────────────────────── */}
       <section className="hp-hero">
-        {showVideo ? (
-          <div className="hp-hero-media" aria-hidden="true">
-            <video className="hp-hero-video" autoPlay muted loop playsInline preload="auto">
-              <source src={HERO_VIDEO_SRC} type="video/mp4" />
-            </video>
-            <div className="hp-hero-media-overlay" />
-          </div>
-        ) : (
-          <div className="hp-hero-media hp-hero-media-static" aria-hidden="true">
-            <div className="hp-hero-media-overlay" />
-          </div>
-        )}
-        <div className="hp-hero-glow"  aria-hidden="true" />
-        <div className="hp-hero-sweep" aria-hidden="true" />
-
-        {/* Floating depth orbs */}
-        <motion.div
-          className="hp-orb hp-orb-1" aria-hidden="true"
-          animate={{ y: [0, -28, 0], rotate: [0, 6, 0] }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="hp-orb hp-orb-2" aria-hidden="true"
-          animate={{ y: [0, 22, 0], x: [0, -12, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        />
-        <motion.div
-          className="hp-orb hp-orb-3" aria-hidden="true"
-          animate={{ y: [0, 16, 0], x: [0, 8, 0] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 7 }}
-        />
+        <HeroScene />
 
         <div className="container hp-hero-inner">
           <motion.span className="hp-eyebrow" {...fadeUp(0)}>
@@ -473,18 +433,9 @@ const HomePage = ({ onNavigate }) => {
       <section className="hp-cta">
         <div className="container">
           <Reveal className="hp-cta-box">
-            {showVideo ? (
-              <div className="hp-cta-media" aria-hidden="true">
-                <video className="hp-cta-video" autoPlay muted loop playsInline preload="auto">
-                  <source src={CTA_VIDEO_SRC} type="video/mp4" />
-                </video>
-                <div className="hp-cta-media-overlay" />
-              </div>
-            ) : (
-              <div className="hp-cta-media hp-cta-media-static" aria-hidden="true">
-                <div className="hp-cta-media-overlay" />
-              </div>
-            )}
+            <div className="hp-cta-media hp-cta-media-static" aria-hidden="true">
+              <div className="hp-cta-media-overlay" />
+            </div>
             <div className="hp-cta-glow" aria-hidden="true" />
             <div className="hp-cta-content">
               <span className="hp-section-label">Get started today</span>
