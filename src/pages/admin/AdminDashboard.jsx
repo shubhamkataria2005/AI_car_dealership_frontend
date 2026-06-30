@@ -273,7 +273,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     return (
       <div className="admin-stats-grid">
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">USR</div>
           <div className="stat-info">
             <h3>Total Users</h3>
             <p className="stat-number">{stats.totalUsers || 0}</p>
@@ -285,83 +285,86 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">CAR</div>
           <div className="stat-info">
             <h3>Total Cars</h3>
             <p className="stat-number">{stats.totalCars || 0}</p>
             <div className="stat-breakdown">
-              <span>Marketplace: {marketplaceCars}</span>
-              <span>Dealership: {dealershipCars}</span>
+              <span>In Stock: {dealershipCars}</span>
               <span>Available: {stats.availableCars || 0}</span>
               <span>Sold: {stats.soldCars || 0}</span>
             </div>
           </div>
         </div>
-        
+
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">INS</div>
           <div className="stat-info">
             <h3>Pending Inspections</h3>
             <p className="stat-number">{pendingInspections}</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">TDR</div>
           <div className="stat-info">
             <h3>Pending Test Drives</h3>
             <p className="stat-number">{pendingTestDrives}</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">TRD</div>
           <div className="stat-info">
             <h3>Pending Trade-Ins</h3>
             <p className="stat-number">{pendingTradeIns}</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon-box">MSG</div>
           <div className="stat-info">
             <h3>Total Messages</h3>
             <p className="stat-number">{stats.totalMessages || 0}</p>
           </div>
         </div>
-        
+
         <div className="stat-card full-width">
           <h3>Recent Users</h3>
           <div className="recent-list">
             {stats.recentUsers?.length > 0 ? stats.recentUsers.map(userItem => (
               <div key={userItem.id} className="recent-item">
-                <span>{userItem.username}</span>
+                <div className="recent-avatar">{userItem.username?.charAt(0).toUpperCase()}</div>
+                <div style={{ flex: 1 }}>
+                  <div className="recent-name">{userItem.username}</div>
+                  <div className="recent-sub">{userItem.email}</div>
+                </div>
                 <span className={`role-badge role-${userItem.role?.toLowerCase()}`}>
-                  {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role === 'SUPER_ADMIN' ? 'Boss' : userItem.role === 'ADMIN' ? 'Manager' : userItem.role}
+                  {userItem.role === 'SALES_EMPLOYEE' ? 'Sales' : userItem.role === 'SUPER_ADMIN' ? 'Boss' : userItem.role === 'ADMIN' ? 'Manager' : 'User'}
                 </span>
-                <span>{userItem.email}</span>
               </div>
-            )) : <div>No recent users</div>}
+            )) : <div style={{ color: 'var(--muted)', padding: '12px 0' }}>No recent users</div>}
           </div>
         </div>
-        
+
         <div className="stat-card full-width">
           <h3>Recent Car Listings</h3>
           <div className="recent-list">
             {stats.recentCars?.length > 0 ? stats.recentCars.map(car => (
               <div key={car.id} className="recent-item">
-                <span>{car.year} {car.make} {car.model}</span>
-                <span className="source-badge-small" style={{ background: car.carSource === 'DEALERSHIP' ? 'var(--gold-pale)' : 'var(--gray-light)' }}>
-                  {car.carSource === 'DEALERSHIP' ? 'Dealership' : 'Marketplace'}
-                </span>
+                <div className="recent-avatar">{car.make?.charAt(0)}</div>
+                <div style={{ flex: 1 }}>
+                  <div className="recent-name">{car.year} {car.make} {car.model}</div>
+                  <div className="recent-sub">{car.carSource === 'DEALERSHIP' ? 'Dealership stock' : 'Marketplace'}</div>
+                </div>
                 <span className="price-badge">${car.price?.toLocaleString()}</span>
                 <span className={`status-badge status-${car.status?.toLowerCase()}`}>
                   {car.status}
                 </span>
               </div>
-            )) : <div>No recent cars</div>}
+            )) : <div style={{ color: 'var(--muted)', padding: '12px 0' }}>No recent cars</div>}
           </div>
         </div>
       </div>
@@ -743,54 +746,62 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
     <div className="admin-dashboard">
       <div className="admin-sidebar">
         <div className="admin-logo" onClick={() => onNavigate('home')}>
-          Admin Panel
+          Drive<span>Hub</span> Admin
         </div>
-        
+
         <div className="admin-user-info">
           <div className="admin-avatar">{user.username?.charAt(0).toUpperCase()}</div>
           <div className="admin-user-details">
             <strong>{user.username}</strong>
-            <span className={`role-badge role-${user.role?.toLowerCase()}`}>
-              {user.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : user.role}
+            <span>
+              {user.role === 'SUPER_ADMIN' ? 'Boss' : user.role === 'ADMIN' ? 'Manager' : user.role === 'SALES_EMPLOYEE' ? 'Sales' : 'User'}
             </span>
           </div>
         </div>
-        
+
         <nav className="admin-nav">
-          <button 
+          <div className="admin-nav-section">Main</div>
+          <button
             className={`admin-nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            Dashboard
+            <span className="nav-icon">OV</span>
+            Overview
           </button>
-          <button 
+          <button
             className={`admin-nav-link ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
+            <span className="nav-icon">US</span>
             Users
           </button>
-          <button 
+          <button
             className={`admin-nav-link ${activeTab === 'cars' ? 'active' : ''}`}
             onClick={() => setActiveTab('cars')}
           >
+            <span className="nav-icon">CA</span>
             Cars
           </button>
-          <button 
+          <div className="admin-nav-section">Operations</div>
+          <button
             className={`admin-nav-link ${activeTab === 'testdrives' ? 'active' : ''}`}
             onClick={() => setActiveTab('testdrives')}
           >
+            <span className="nav-icon">TD</span>
             Test Drives
           </button>
-          <button 
+          <button
             className={`admin-nav-link ${activeTab === 'tradeins' ? 'active' : ''}`}
             onClick={() => setActiveTab('tradeins')}
           >
+            <span className="nav-icon">TI</span>
             Trade-Ins
           </button>
-          <button 
+          <button
             className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
             onClick={() => setActiveTab('messages')}
           >
+            <span className="nav-icon">MS</span>
             Messages
           </button>
         </nav>
@@ -802,9 +813,18 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
       
       <div className="admin-main">
         <div className="admin-header">
-          <h2>Admin Control Panel</h2>
+          <div className="admin-header-left">
+            <h2>
+              {activeTab === 'dashboard' ? 'Overview' :
+               activeTab === 'users' ? 'Users' :
+               activeTab === 'cars' ? 'Cars' :
+               activeTab === 'testdrives' ? 'Test Drives' :
+               activeTab === 'tradeins' ? 'Trade-Ins' : 'Messages'}
+            </h2>
+            <p>Admin Control Panel</p>
+          </div>
           <button className="back-to-site" onClick={() => onNavigate('dashboard')}>
-            Back to Dashboard
+            Back to Site
           </button>
         </div>
         
