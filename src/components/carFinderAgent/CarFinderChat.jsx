@@ -5,7 +5,7 @@ import './CarFinderChat.css';
 
 const WELCOME = "Hi! I'm your AI car finder. Tell me what you're looking for — budget, body type, fuel type, or anything else — and I'll search our live inventory for you.";
 
-export default function CarFinderChat({ onNavigate }) {
+export default function CarFinderChat({ onNavigate, sessionToken }) {
   const [isOpen,   setIsOpen]   = useState(false);
   const [messages, setMessages] = useState([
     { role: 'agent', content: WELCOME, cars: [] }
@@ -36,9 +36,13 @@ export default function CarFinderChat({ onNavigate }) {
     historyRef.current.push({ role: 'user', content: text });
 
     try {
+      const token = sessionToken || localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res  = await fetch(`${API_BASE_URL}/api/agent/car-finder`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body:    JSON.stringify({ message: text, history: historyRef.current.slice(0, -1) }),
       });
       const data = await res.json();

@@ -276,7 +276,7 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
 
       {/* Agent 1 — floating car finder chat, hidden on checkout/payment screens */}
       {!['checkout', 'purchase-success'].includes(currentPage) && (
-        <CarFinderChat onNavigate={handleNavigateWrapper} />
+        <CarFinderChat onNavigate={handleNavigateWrapper} sessionToken={sessionToken} />
       )}
     </div>
   );
