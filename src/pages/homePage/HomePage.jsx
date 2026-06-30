@@ -34,7 +34,6 @@ const CTA_VIDEO_SRC = '/videos/cta.mp4';
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activePlatform, setActivePlatform] = useState('both');
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
 
   // Show video on all devices unless the user has reduced-motion on or
@@ -59,18 +58,10 @@ const HomePage = ({ onNavigate }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const countBySource = (src) => allCars.filter((c) => c.carSource === src).length;
-
-  const displayedCars = (() => {
-    if (activePlatform === 'marketplace') return allCars.filter((c) => c.carSource === 'MARKETPLACE').slice(0, 6);
-    if (activePlatform === 'dealership') return allCars.filter((c) => c.carSource === 'DEALERSHIP').slice(0, 6);
-    return allCars.slice(0, 6);
-  })();
+  const displayedCars = allCars.filter((c) => c.carSource === 'DEALERSHIP').slice(0, 6);
 
   const runSearch = () => {
-    const params = {
-      source: activePlatform === 'both' ? '' : activePlatform === 'marketplace' ? 'MARKETPLACE' : 'DEALERSHIP',
-    };
+    const params = { source: 'DEALERSHIP' };
     if (searchForm.keyword) params.keyword = searchForm.keyword;
     if (searchForm.make) params.make = searchForm.make;
     if (searchForm.maxPrice) params.maxPrice = searchForm.maxPrice;
@@ -108,7 +99,7 @@ const HomePage = ({ onNavigate }) => {
         <div className="hp-hero-sweep" aria-hidden="true" />
         <div className="container hp-hero-inner">
           <motion.span className="hp-eyebrow" {...fadeUp(0)}>
-            Auckland · buy, sell &amp; trade
+            Auckland · inspected vehicles
           </motion.span>
 
           <motion.h1 className="hp-hero-title" {...fadeUp(0.1)}>
@@ -117,8 +108,8 @@ const HomePage = ({ onNavigate }) => {
           </motion.h1>
 
           <motion.p className="hp-hero-sub" {...fadeUp(0.22)}>
-            Private-seller listings and fully inspected dealership cars, in one place.
-            Browse, message the seller, sort your finance — without the showroom pressure.
+            Every car professionally inspected, test-drive ready, and backed by warranty options.
+            Browse our stock, sort your finance — without the showroom pressure.
           </motion.p>
 
           <motion.div className="hp-hero-actions" {...fadeUp(0.34)}>
@@ -126,7 +117,7 @@ const HomePage = ({ onNavigate }) => {
               Browse all cars
             </button>
             <button className="btn-outline" onClick={() => onNavigate('register')}>
-              Sell your car
+              Book a test drive
             </button>
           </motion.div>
 
@@ -213,26 +204,7 @@ const HomePage = ({ onNavigate }) => {
           <div className="hp-section-head">
             <Reveal>
               <span className="hp-section-label">Featured</span>
-              <h2>
-                {activePlatform === 'both' ? 'Latest vehicles'
-                  : activePlatform === 'marketplace' ? 'Marketplace listings'
-                  : 'Dealership inventory'}
-              </h2>
-            </Reveal>
-            <Reveal className="hp-tabs" delay={120}>
-              {[
-                { id: 'both', label: `All (${allCars.length})` },
-                { id: 'marketplace', label: `Marketplace (${countBySource('MARKETPLACE')})` },
-                { id: 'dealership', label: `Dealership (${countBySource('DEALERSHIP')})` },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  className={`hp-tab ${activePlatform === t.id ? 'active' : ''}`}
-                  onClick={() => setActivePlatform(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
+              <h2>Latest vehicles</h2>
             </Reveal>
           </div>
 
@@ -261,9 +233,7 @@ const HomePage = ({ onNavigate }) => {
                       alt={`${car.year} ${car.make} ${car.model}`}
                       loading="lazy"
                     />
-                    {car.carSource === 'DEALERSHIP' && <span className="hp-tag hp-tag-dealer">Dealership</span>}
-                    {car.carSource === 'MARKETPLACE' && <span className="hp-tag hp-tag-market">Private seller</span>}
-                    {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
+                    {car.inspectionStatus === 'PASSED' && (
                       <span className="hp-tag-inspected">✓ Inspected</span>
                     )}
                   </div>
@@ -295,47 +265,6 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* ───────────────────── TWO WAYS TO BUY (editorial split) ───────────────────── */}
-      <section className="hp-ways">
-        <div className="container">
-          <Reveal>
-            <span className="hp-section-label">Two ways to buy</span>
-            <h2 className="hp-ways-title">Your call. <span className="hp-paren">(both honest)</span></h2>
-          </Reveal>
-
-          <div className="hp-ways-grid">
-            <Reveal className="hp-way" delay={80}>
-              <span className="hp-way-index">Marketplace</span>
-              <h3>Buy direct from private sellers</h3>
-              <p>Find sharper prices and deal one-to-one. Message the seller, negotiate, and list your own car in minutes.</p>
-              <ul className="hp-way-list">
-                <li>Direct seller messaging</li>
-                <li>Negotiate your own price</li>
-                <li>List your car free</li>
-                <li>AI price suggestions</li>
-              </ul>
-              <button className="hp-way-btn" onClick={() => onNavigate('inventory', { filters: { source: 'MARKETPLACE' } })}>
-                Browse marketplace →
-              </button>
-            </Reveal>
-
-            <Reveal className="hp-way hp-way-accent" delay={180}>
-              <span className="hp-way-index">Dealership</span>
-              <h3>Buy from inspected stock</h3>
-              <p>Company-owned cars, professionally checked, with test drives, servicing and warranty options on hand.</p>
-              <ul className="hp-way-list">
-                <li>150-point inspection</li>
-                <li>Test drives available</li>
-                <li>Service centre access</li>
-                <li>Warranty options</li>
-              </ul>
-              <button className="hp-way-btn" onClick={() => onNavigate('inventory', { filters: { source: 'DEALERSHIP' } })}>
-                Browse dealership →
-              </button>
-            </Reveal>
-          </div>
-        </div>
-      </section>
 
       {/* ───────────────────── AI TOOLS (differentiator) ───────────────────── */}
       <section className="hp-tools">

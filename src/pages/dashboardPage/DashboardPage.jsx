@@ -12,7 +12,6 @@ import { API_BASE_URL } from '../../config';
 const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) => {
   const [activeTool, setActiveTool] = useState('chat');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showListCarForm, setShowListCarForm] = useState(false);
   const [showDealershipForm, setShowDealershipForm] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -156,7 +155,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
   };
 
   const renderTool = () => {
-    if (showListCarForm) return renderListCarForm(false);
     if (showDealershipForm) return renderListCarForm(true);
     switch (activeTool) {
       case 'messages':
@@ -320,14 +318,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
             <button className="dash-nav-link" onClick={() => onNavigate('home')}>Home</button>
             <button className="dash-nav-link" onClick={() => onNavigate('inventory')}>Inventory</button>
 
-            <p className="dash-nav-label">Sell</p>
-            <button
-              className={`dash-nav-link ${showListCarForm ? 'active' : ''}`}
-              onClick={() => { setShowListCarForm(true); setShowDealershipForm(false); setActiveTool(null); }}
-            >
-              List on Marketplace
-            </button>
-
             {isSalesEmployee && (
               <button
                 className={`dash-nav-link ${showDealershipForm ? 'active' : ''}`}
@@ -341,7 +331,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
             {tools.map(tool => (
               <button
                 key={tool.id}
-                className={`dash-nav-link ${activeTool === tool.id && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+                className={`dash-nav-link ${activeTool === tool.id && !showDealershipForm ? 'active' : ''}`}
                 onClick={() => handleToolClick(tool.id)}
               >
                 <span>{tool.icon}</span>
@@ -356,7 +346,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
 
             <p className="dash-nav-label">Account</p>
             <button
-              className={`dash-nav-link ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+              className={`dash-nav-link ${activeTool === 'profile' && !showDealershipForm ? 'active' : ''}`}
               onClick={() => handleToolClick('profile')}
             >
               <span>Profile</span>
@@ -386,10 +376,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
         </div>
 
         <div className="dash-mobile-tabs">
-          <button className={`mobile-tab ${showListCarForm ? 'active' : ''}`}
-            onClick={() => { setShowListCarForm(true); setShowDealershipForm(false); setActiveTool(null); }}>
-            <span>List</span>
-          </button>
           {isSalesEmployee && (
             <button className={`mobile-tab ${showDealershipForm ? 'active' : ''}`}
               onClick={() => { setShowDealershipForm(true); setShowListCarForm(false); setActiveTool(null); }}>
@@ -398,7 +384,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
           )}
           {tools.map(tool => (
             <button key={tool.id}
-              className={`mobile-tab ${activeTool === tool.id && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+              className={`mobile-tab ${activeTool === tool.id && !showDealershipForm ? 'active' : ''}`}
               onClick={() => handleToolClick(tool.id)}
               style={{ position: 'relative' }}>
               <span>{tool.icon}</span>
@@ -410,7 +396,7 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
               )}
             </button>
           ))}
-          <button className={`mobile-tab ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
+          <button className={`mobile-tab ${activeTool === 'profile' && !showDealershipForm ? 'active' : ''}`}
             onClick={() => handleToolClick('profile')}>
             <span>Profile</span>
           </button>
@@ -442,7 +428,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
               </div>
               <button className="mobile-menu-link" onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}>Home</button>
               <button className="mobile-menu-link" onClick={() => { onNavigate('inventory'); setMobileMenuOpen(false); }}>Inventory</button>
-              <button className="mobile-menu-link" onClick={() => { setShowListCarForm(true); setShowDealershipForm(false); setActiveTool(null); setMobileMenuOpen(false); }}>List on Marketplace</button>
               {isSalesEmployee && (
                 <button className="mobile-menu-link" onClick={() => { setShowDealershipForm(true); setShowListCarForm(false); setActiveTool(null); setMobileMenuOpen(false); }}>Add Dealership Car</button>
               )}

@@ -30,11 +30,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
         body: incoming.bodyType || 'All',
         fuel: incoming.fuel || 'All',
         maxPrice: incoming.maxPrice ? Number(incoming.maxPrice) : 5000000,
-        source: incoming.source === 'MARKETPLACE'
-          ? 'Marketplace'
-          : incoming.source === 'DEALERSHIP'
-            ? 'Dealership'
-            : 'All',
+        source: 'All',
       }));
     }
   }, [locationFilters]);
@@ -73,7 +69,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
   const MAKES = ['All', 'Toyota', 'Honda', 'Mazda', 'Subaru', 'Nissan', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Hyundai', 'Kia', 'Volkswagen', 'Ferrari', 'Lamborghini', 'McLaren', 'Porsche', 'Aston Martin', 'Rolls Royce', 'Bentley'];
   const BODIES = ['All', 'Sedan', 'SUV', 'Hatchback', 'Ute', 'Wagon', 'Coupe', 'Convertible'];
   const FUELS = ['All', 'Petrol', 'Diesel', 'Hybrid', 'Electric'];
-  const SOURCES = ['All', 'Marketplace', 'Dealership'];
+  const SOURCES = ['All'];
 
   const setFilter = (key, val) => setFilters(prev => ({ ...prev, [key]: val }));
 
@@ -126,11 +122,8 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       // Price filter
       if (car.price && car.price > filters.maxPrice) return false;
 
-      // Source filter
-      if (filters.source !== 'All') {
-        const expectedSource = filters.source === 'Marketplace' ? 'MARKETPLACE' : 'DEALERSHIP';
-        if (car.carSource !== expectedSource) return false;
-      }
+      // Only show dealership cars
+      if (car.carSource !== 'DEALERSHIP') return false;
 
       return true;
     })
@@ -141,7 +134,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
       return (b.year || 0) - (a.year || 0);
     });
 
-  const marketplaceCount = cars.filter(c => c.carSource === 'MARKETPLACE').length;
   const dealershipCount = cars.filter(c => c.carSource === 'DEALERSHIP').length;
 
   return (
@@ -158,13 +150,10 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               <span className="inventory-count">
                 {loading ? 'Loading...' : `${filtered.length} vehicles available`}
               </span>
-              {!loading && cars.length > 0 && (
+              {!loading && dealershipCount > 0 && (
                 <div className="inventory-source-badges">
-                  <span className="source-badge-small marketplace">
-                    Marketplace: {marketplaceCount}
-                  </span>
                   <span className="source-badge-small dealership">
-                    Dealership: {dealershipCount}
+                    {dealershipCount} in stock
                   </span>
                 </div>
               )}
@@ -196,21 +185,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
-          </div>
-
-          <div className="filter-group">
-            <label>Car Source</label>
-            <div className="filter-chips">
-              {SOURCES.map(s => (
-                <button
-                  key={s}
-                  className={`filter-chip ${filters.source === s ? 'active' : ''}`}
-                  onClick={() => setFilter('source', s)}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="filter-group">
@@ -377,13 +351,7 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
                     <span className="car-badge">
                       {car.status === 'AVAILABLE' ? 'Available' : (car.status || 'Available')}
                     </span>
-                    {car.carSource === 'DEALERSHIP' && (
-                      <span className="source-badge dealership">Dealership</span>
-                    )}
-                    {car.carSource === 'MARKETPLACE' && (
-                      <span className="source-badge marketplace">Private Seller</span>
-                    )}
-                    {car.carSource === 'DEALERSHIP' && car.inspectionStatus === 'PASSED' && (
+                    {car.inspectionStatus === 'PASSED' && (
                       <span className="inspection-badge">✓ Inspected</span>
                     )}
                   </div>
