@@ -23,6 +23,36 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
     description: '', imageUrl: ''
   });
   const [listingStatus, setListingStatus] = useState('');
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+  const [priceHint, setPriceHint] = useState('');
+
+  const handleGenerateDescription = async () => {
+    const { make, model, year, mileage, fuel, transmission, bodyType } = carFormData;
+    if (!make || !model || !year) {
+      alert('Please fill in Make, Model, and Year before generating a description.');
+      return;
+    }
+    setGeneratingDesc(true);
+    setPriceHint('');
+    try {
+      const res  = await fetch(`${API_BASE_URL}/api/agent/generate-listing`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body:    JSON.stringify({ make, model, year: parseInt(year), mileage: parseInt(mileage) || 0, fuel, transmission, bodyType }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCarFormData(prev => ({ ...prev, description: data.description }));
+        if (data.suggestedPrice) {
+          setPriceHint(`AI suggests $${Math.round(data.suggestedPrice).toLocaleString()} — ${data.priceReason}`);
+        }
+      }
+    } catch (err) {
+      console.error('Generate description error:', err);
+    } finally {
+      setGeneratingDesc(false);
+    }
+  };
 
   const token = sessionToken || localStorage.getItem('token');
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
@@ -272,10 +302,35 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Description</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gray-dark)' }}>Description</label>
+              <button
+                type="button"
+                onClick={handleGenerateDescription}
+                disabled={generatingDesc}
+                style={{
+                  padding: '5px 12px', fontSize: '11px', fontWeight: '700',
+                  letterSpacing: '0.05em', textTransform: 'uppercase',
+                  background: generatingDesc ? 'var(--gray-lighter)' : 'var(--gradient-accent, linear-gradient(135deg,#FF7A1A,#FFB44A))',
+                  color: '#fff', border: 'none', borderRadius: '6px', cursor: generatingDesc ? 'wait' : 'pointer',
+                  transition: 'opacity 0.2s', opacity: generatingDesc ? 0.7 : 1,
+                }}
+              >
+                {generatingDesc ? '✦ Generating…' : '✦ Generate with AI'}
+              </button>
+            </div>
             <textarea name="description" value={carFormData.description} onChange={handleCarFormChange}
-              rows={4} placeholder="Describe the car's condition, features, service history..."
+              rows={4} placeholder="Click 'Generate with AI' after filling in Make, Model and Year — or write your own description…"
               style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-lighter)', borderRadius: 'var(--radius-sm)', fontSize: '14px', background: 'var(--cream)', fontFamily: 'var(--font-sans)', resize: 'vertical' }} />
+            {priceHint && (
+              <div style={{
+                marginTop: '8px', padding: '9px 13px', borderRadius: '8px',
+                background: 'rgba(255,122,26,0.08)', border: '1px solid rgba(255,122,26,0.25)',
+                fontSize: '12px', color: 'var(--accent)', lineHeight: '1.5',
+              }}>
+                💡 {priceHint}
+              </div>
+            )}
           </div>
 
           <button type="submit" disabled={listingStatus === 'loading'}

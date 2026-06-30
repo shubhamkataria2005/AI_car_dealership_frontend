@@ -13,6 +13,7 @@ import RegisterPage from './pages/registerPage/RegisterPage.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import CheckoutPage from './pages/checkout/CheckoutPage.jsx';
 import PurchaseSuccessPage from './pages/purchaseSuccess/PurchaseSuccessPage.jsx';
+import CarFinderChat from './components/carFinderAgent/CarFinderChat.jsx';
 import './App.css';
 
 function App() {
@@ -272,6 +273,11 @@ function AppContent({ user, sessionToken, currentPage, currentCar, locationFilte
         </AnimatePresence>
       </main>
       <Footer onNavigate={handleNavigateWrapper} />
+
+      {/* Agent 1 — floating car finder chat, hidden on checkout/payment screens */}
+      {!['checkout', 'purchase-success'].includes(currentPage) && (
+        <CarFinderChat onNavigate={handleNavigateWrapper} />
+      )}
     </div>
   );
 }
