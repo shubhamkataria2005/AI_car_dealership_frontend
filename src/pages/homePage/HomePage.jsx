@@ -1,11 +1,67 @@
 // src/pages/homePage/HomePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './HomePage.css';
 import { api } from '../../services/api';
 import Reveal from '../../components/ui/Reveal';
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useSpring, useTransform, useInView } from 'motion/react';
 
-const springCard = { type: 'spring', stiffness: 300, damping: 24 };
+// ─── 3D tilt card ────────────────────────────────────────────────────────────
+const TiltCard = ({ children, className, intensity = 7, onClick, style, ...props }) => {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [intensity, -intensity]), { stiffness: 400, damping: 32 });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-intensity, intensity]), { stiffness: 400, damping: 32 });
+
+  const handleMouseMove = (e) => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    x.set((e.clientX - rect.left) / rect.width - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      style={{ rotateX, rotateY, transformPerspective: 900, ...style }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// ─── Animated count-up ───────────────────────────────────────────────────────
+const CountUp = ({ end, suffix = '', duration = 1.8 }) => {
+  const ref = useRef(null);
+  const [count, setCount] = useState(0);
+  const isInView = useInView(ref, { once: true, margin: '-60px' });
+
+  useEffect(() => {
+    if (!isInView) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(end);
+      return;
+    }
+    let frame = 0;
+    const total = Math.round(duration * 60);
+    const timer = setInterval(() => {
+      frame++;
+      const eased = 1 - Math.pow(1 - frame / total, 3);
+      setCount(Math.floor(eased * end));
+      if (frame >= total) { setCount(end); clearInterval(timer); }
+    }, 1000 / 60);
+    return () => clearInterval(timer);
+  }, [isInView, end, duration]);
+
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+};
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 28 },
   animate: { opacity: 1, y: 0 },
@@ -17,43 +73,87 @@ const MARQUEE_MAKES = [
   'Audi', 'Subaru', 'Nissan', 'Mercedes', 'Volkswagen', 'Lexus',
 ];
 
-const TOOLS = [
-  { label: 'AI Assistant',    desc: 'Ask anything about a car, finance, or the buying process.' },
-  { label: 'Brand Recognizer', desc: 'Snap a photo, get the make and matching listings.' },
-  { label: 'Instant Trade-In', desc: 'A fair value for your current car in seconds.' },
-  { label: 'Finance Calculator', desc: 'See real monthly repayments before you commit.' },
+const STATS = [
+  { end: 500,  suffix: '+',  label: 'Cars Sold' },
+  { end: 10,   suffix: 'yr', label: 'In Business' },
+  { end: 1200, suffix: '+',  label: 'Happy Customers' },
+  { end: 100,  suffix: '%',  label: 'Vehicles Inspected' },
 ];
 
-// Drop your mp4 files at these paths inside the `public/` folder of the
-// project. Keep each one small — aim under ~5MB for a 10-20s muted loop.
-// No poster image needed — phones/touch devices/slow connections get a
-// CSS gradient fallback instead, so there's nothing extra to create.
-const HERO_VIDEO_SRC = '/videos/hero.mp4';
-const CTA_VIDEO_SRC = '/videos/cta.mp4';
+const PROCESS = [
+  {
+    step: '01',
+    eyebrow: 'Discover',
+    title: 'Browse our full inventory',
+    body: 'Every vehicle is in stock and ready to view. Filter by make, body type, or price — and know exactly what you\'re looking at before you arrive.',
+  },
+  {
+    step: '02',
+    eyebrow: 'Experience',
+    title: 'Get behind the wheel',
+    body: 'Book a no-pressure test drive at a time that suits you. Our team answers every question and never rushes the decision.',
+  },
+  {
+    step: '03',
+    eyebrow: 'Purchase',
+    title: 'Drive home in confidence',
+    body: 'Flexible finance, trade-in valuation, and warranty options — all handled in one visit. No hidden surprises at signing.',
+  },
+];
 
+const SERVICES = [
+  {
+    icon: '$',
+    eyebrow: 'Finance',
+    title: 'Finance Calculator',
+    desc: 'See real monthly repayments before you commit. Compare loan terms and find a payment that fits your life.',
+    cta: 'Calculate now',
+    navigate: 'dashboard',
+    color: 'rgba(255,122,26,0.12)',
+    glow: 'rgba(255,122,26,0.3)',
+  },
+  {
+    icon: '↺',
+    eyebrow: 'Trade-In',
+    title: 'Instant Trade-In',
+    desc: 'Get an AI-powered estimate for your current car. Our model trained on 90,000+ records gives you a fair starting price in seconds.',
+    cta: 'Get estimate',
+    navigate: 'dashboard',
+    color: 'rgba(74,170,255,0.10)',
+    glow: 'rgba(74,170,255,0.25)',
+  },
+  {
+    icon: '→',
+    eyebrow: 'Test Drive',
+    title: 'Book a Test Drive',
+    desc: 'Choose your car, pick a time, and we\'ll have it ready and waiting. No pressure, just you and the road.',
+    cta: 'Book now',
+    navigate: 'register',
+    color: 'rgba(52,211,153,0.10)',
+    glow: 'rgba(52,211,153,0.25)',
+  },
+];
+
+const HERO_VIDEO_SRC = '/videos/hero.mp4';
+const CTA_VIDEO_SRC  = '/videos/cta.mp4';
+
+// ─── Component ───────────────────────────────────────────────────────────────
 const HomePage = ({ onNavigate }) => {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchForm, setSearchForm] = useState({ keyword: '', make: '', maxPrice: '', body: '' });
-
-  // Show video on all devices unless the user has reduced-motion on or
-  // is on a slow/metered connection. Mobile browsers support autoplay
-  // for muted+playsInline videos so there's no need to block them.
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
-    const isSlowOrMetered = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
-
-    setShowVideo(!reduceMotion && !isSlowOrMetered);
+    const slow = conn ? (conn.saveData || /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')) : false;
+    setShowVideo(!reduceMotion && !slow);
   }, []);
 
   useEffect(() => {
     api.getAllCars()
-      .then((data) => {
-        if (data && data.success) setAllCars(data.cars || []);
-      })
+      .then((d) => { if (d?.success) setAllCars(d.cars || []); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -61,12 +161,12 @@ const HomePage = ({ onNavigate }) => {
   const displayedCars = allCars.filter((c) => c.carSource === 'DEALERSHIP').slice(0, 6);
 
   const runSearch = () => {
-    const params = { source: 'DEALERSHIP' };
-    if (searchForm.keyword) params.keyword = searchForm.keyword;
-    if (searchForm.make) params.make = searchForm.make;
-    if (searchForm.maxPrice) params.maxPrice = searchForm.maxPrice;
-    if (searchForm.body) params.bodyType = searchForm.body;
-    onNavigate('inventory', { filters: params });
+    const p = { source: 'DEALERSHIP' };
+    if (searchForm.keyword)  p.keyword  = searchForm.keyword;
+    if (searchForm.make)     p.make     = searchForm.make;
+    if (searchForm.maxPrice) p.maxPrice = searchForm.maxPrice;
+    if (searchForm.body)     p.bodyType = searchForm.body;
+    onNavigate('inventory', { filters: p });
   };
 
   const setField = (k, v) => setSearchForm((p) => ({ ...p, [k]: v }));
@@ -78,14 +178,7 @@ const HomePage = ({ onNavigate }) => {
       <section className="hp-hero">
         {showVideo ? (
           <div className="hp-hero-media" aria-hidden="true">
-            <video
-              className="hp-hero-video"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-            >
+            <video className="hp-hero-video" autoPlay muted loop playsInline preload="auto">
               <source src={HERO_VIDEO_SRC} type="video/mp4" />
             </video>
             <div className="hp-hero-media-overlay" />
@@ -95,8 +188,26 @@ const HomePage = ({ onNavigate }) => {
             <div className="hp-hero-media-overlay" />
           </div>
         )}
-        <div className="hp-hero-glow" aria-hidden="true" />
+        <div className="hp-hero-glow"  aria-hidden="true" />
         <div className="hp-hero-sweep" aria-hidden="true" />
+
+        {/* Floating depth orbs */}
+        <motion.div
+          className="hp-orb hp-orb-1" aria-hidden="true"
+          animate={{ y: [0, -28, 0], rotate: [0, 6, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="hp-orb hp-orb-2" aria-hidden="true"
+          animate={{ y: [0, 22, 0], x: [0, -12, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+        />
+        <motion.div
+          className="hp-orb hp-orb-3" aria-hidden="true"
+          animate={{ y: [0, 16, 0], x: [0, 8, 0] }}
+          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 7 }}
+        />
+
         <div className="container hp-hero-inner">
           <motion.span className="hp-eyebrow" {...fadeUp(0)}>
             Auckland · inspected vehicles
@@ -139,7 +250,6 @@ const HomePage = ({ onNavigate }) => {
           </motion.div>
         </div>
 
-        {/* Ambient marquee — the signature */}
         <div className="hp-marquee" aria-hidden="true">
           <div className="hp-marquee-track">
             {[...MARQUEE_MAKES, ...MARQUEE_MAKES].map((m, i) => (
@@ -198,6 +308,22 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* ─────────────────────────── STATS ─────────────────────────── */}
+      <section className="hp-stats">
+        <div className="container">
+          <div className="hp-stats-grid">
+            {STATS.map((s, i) => (
+              <Reveal key={s.label} className="hp-stat-item" delay={i * 75}>
+                <div className="hp-stat-number">
+                  <CountUp end={s.end} suffix={s.suffix} />
+                </div>
+                <div className="hp-stat-label">{s.label}</div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─────────────────────────── FEATURED ─────────────────────────── */}
       <section className="hp-featured">
         <div className="container">
@@ -215,7 +341,7 @@ const HomePage = ({ onNavigate }) => {
               <div className="hp-cars-empty">No cars in this category yet.</div>
             ) : (
               displayedCars.map((car, i) => (
-                <motion.article
+                <TiltCard
                   key={car.id}
                   className="hp-card"
                   onClick={() => onNavigate('car-detail', car)}
@@ -223,9 +349,8 @@ const HomePage = ({ onNavigate }) => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-60px' }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 }}
-                  whileHover={{ y: -10, scale: 1.015 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{ transition: 'border-color 0.4s, box-shadow 0.4s' }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div className="hp-card-img">
                     <img
@@ -252,7 +377,7 @@ const HomePage = ({ onNavigate }) => {
                       View details <span className="hp-arrow">→</span>
                     </div>
                   </div>
-                </motion.article>
+                </TiltCard>
               ))
             )}
           </div>
@@ -265,24 +390,79 @@ const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-
-      {/* ───────────────────── AI TOOLS (differentiator) ───────────────────── */}
-      <section className="hp-tools">
+      {/* ─────────────────────────── HOW IT WORKS ─────────────────────────── */}
+      <section className="hp-process">
         <div className="container">
-          <div className="hp-tools-head">
+          <Reveal className="hp-process-head">
+            <span className="hp-section-label">Process</span>
+            <h2>Buying a car<br />should be simple.</h2>
+            <p>Three steps. No runaround.</p>
+          </Reveal>
+
+          <div className="hp-process-steps">
+            {PROCESS.map((step, i) => (
+              <Reveal
+                key={step.step}
+                className={`hp-process-row${i % 2 === 1 ? ' hp-process-row-rev' : ''}`}
+                delay={100}
+              >
+                <div className="hp-process-text">
+                  <span className="hp-process-eyebrow">{step.eyebrow}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
+                <div className="hp-process-visual">
+                  <div className="hp-process-num-bg" aria-hidden="true">{step.step}</div>
+                  <motion.div
+                    className="hp-process-card"
+                    initial={{ opacity: 0, x: i % 2 === 0 ? 48 : -48, rotateY: i % 2 === 0 ? 12 : -12 }}
+                    whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+                    viewport={{ once: true, margin: '-80px' }}
+                    transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+                    style={{ transformPerspective: 1000 }}
+                  >
+                    <div className="hp-process-card-num">{step.step}</div>
+                    <div className="hp-process-card-eyebrow">{step.eyebrow}</div>
+                    <div className="hp-process-card-divider" />
+                    <div className="hp-process-card-title">{step.title}</div>
+                  </motion.div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────── SERVICES ─────────────────────────── */}
+      <section className="hp-services">
+        <div className="container">
+          <div className="hp-section-head">
             <Reveal>
-              <span className="hp-section-label">Built in</span>
-              <h2>Smarter than the average listing site</h2>
-            </Reveal>
-            <Reveal as="p" className="hp-tools-sub" delay={120}>
-              Tools that actually help you decide — free with any account.
+              <span className="hp-section-label">Services</span>
+              <h2>Everything you need,<br />one dealership.</h2>
             </Reveal>
           </div>
-          <div className="hp-tools-grid">
-            {TOOLS.map((t, i) => (
-              <Reveal key={t.label} className="hp-tool" delay={i * 80}>
-                <h4>{t.label}</h4>
-                <p>{t.desc}</p>
+          <div className="hp-services-grid">
+            {SERVICES.map((svc, i) => (
+              <Reveal key={svc.eyebrow} delay={i * 90}>
+                <TiltCard
+                  className="hp-svc-card"
+                  onClick={() => onNavigate(svc.navigate)}
+                  style={{ '--svc-bg': svc.color, '--svc-glow': svc.glow, cursor: 'pointer' }}
+                  whileTap={{ scale: 0.97 }}
+                  intensity={6}
+                >
+                  <div className="hp-svc-icon-box">
+                    <span className="hp-svc-icon">{svc.icon}</span>
+                  </div>
+                  <div className="hp-svc-eyebrow">{svc.eyebrow}</div>
+                  <h3 className="hp-svc-title">{svc.title}</h3>
+                  <p className="hp-svc-desc">{svc.desc}</p>
+                  <div className="hp-svc-cta">
+                    <span>{svc.cta}</span>
+                    <span className="hp-svc-arrow">→</span>
+                  </div>
+                </TiltCard>
               </Reveal>
             ))}
           </div>
@@ -295,14 +475,7 @@ const HomePage = ({ onNavigate }) => {
           <Reveal className="hp-cta-box">
             {showVideo ? (
               <div className="hp-cta-media" aria-hidden="true">
-                <video
-                  className="hp-cta-video"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="auto"
-                >
+                <video className="hp-cta-video" autoPlay muted loop playsInline preload="auto">
                   <source src={CTA_VIDEO_SRC} type="video/mp4" />
                 </video>
                 <div className="hp-cta-media-overlay" />
@@ -316,7 +489,7 @@ const HomePage = ({ onNavigate }) => {
             <div className="hp-cta-content">
               <span className="hp-section-label">Get started today</span>
               <h2>Ready to find your next car?</h2>
-              <p>Create a free account to save favourites, book test drives and use every AI tool.</p>
+              <p>Create a free account to save favourites, book test drives and get an instant trade-in valuation.</p>
             </div>
             <div className="hp-cta-actions">
               <button className="btn-primary" onClick={() => onNavigate('inventory')}>Browse inventory</button>
