@@ -112,7 +112,7 @@ const PaymentModal = ({ isOpen, onClose, order, car, customerDetails, sessionTok
           <h3>Payment Methods</h3>
           
           <div className="method-card" onClick={handleMockPayment}>
-            <div className="method-icon">💳</div>
+            <div className="method-icon">Card</div>
             <div className="method-info">
               <strong>Mock Payment</strong>
               <p>Click to simulate payment - No actual money will be charged</p>
@@ -120,7 +120,7 @@ const PaymentModal = ({ isOpen, onClose, order, car, customerDetails, sessionTok
           </div>
 
           <div className="method-card" onClick={loadBankDetails}>
-            <div className="method-icon">🏦</div>
+            <div className="method-icon">Bank</div>
             <div className="method-info">
               <strong>Bank Transfer</strong>
               <p>View bank details for manual transfer</p>

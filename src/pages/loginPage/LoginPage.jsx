@@ -91,7 +91,6 @@ const Login = ({ onLoginSuccess, onNavigate }) => {
         </div>
         <div className="auth-panel-right" style={{ justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🚗</div>
             <h2>Logging you in...</h2>
             <p>Please wait, redirecting to dashboard.</p>
           </div>

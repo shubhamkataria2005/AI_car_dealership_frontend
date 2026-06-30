@@ -90,7 +90,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
       if (data.success) {
         setEstimate(data.estimatedValue);
         if (data.model) {
-          console.log(`✓ Prediction using: ${data.model}`);
+          console.log(`Prediction using: ${data.model}`);
         }
       } else {
         setMessage(data.message || 'Failed to calculate estimate');
@@ -138,7 +138,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
       const data = await response.json();
       if (data.success) {
         setSubmitted(true);
-        setMessage('✓ Trade-in request submitted! We will contact you soon.');
+        setMessage('Trade-in request submitted! We will contact you soon.');
       } else {
         setMessage(data.message || 'Failed to submit trade-in');
       }
@@ -375,7 +375,7 @@ const TradeInCalculator = ({ user, sessionToken }) => {
           )}
 
           {message && (
-            <div style={{ marginTop: '16px', padding: '12px', background: message.includes('✓') ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius)', color: message.includes('✓') ? '#166534' : '#991b1b' }}>
+            <div style={{ marginTop: '16px', padding: '12px', background: submitted ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius)', color: submitted ? '#166534' : '#991b1b' }}>
               {message}
             </div>
           )}

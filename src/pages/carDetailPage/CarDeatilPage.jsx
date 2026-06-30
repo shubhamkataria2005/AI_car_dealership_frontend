@@ -419,7 +419,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                       className="contact-dealer-btn"
                       onClick={() => setShowMsgForm(prev => !prev)}
                     >
-                      <span className="icon">💬</span>
+                      <span className="icon">Chat</span>
                       Chat
                     </button>
                     <button
@@ -428,7 +428,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                       disabled={!car.sellerPhone}
                       title={!car.sellerPhone ? 'Phone number not provided' : ''}
                     >
-                      <span className="icon">📞</span>
+                      <span className="icon">Call</span>
                       Call
                     </button>
                     <button
@@ -437,7 +437,7 @@ const CarDetailPage = ({ car, user, onNavigate, sessionToken }) => {
                       disabled={!car.sellerEmail}
                       title={!car.sellerEmail ? 'Email not provided' : ''}
                     >
-                      <span className="icon">✉️</span>
+                      <span className="icon">Email</span>
                       Email
                     </button>
                   </div>

@@ -55,11 +55,11 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
   };
 
   const tools = [
-    { id: 'messages', label: 'Messages', icon: '💬', desc: 'Inbox & conversations' },
-    { id: 'tradein', label: 'Trade-In', icon: '🔄', desc: 'Trade your car for a new one' },
-    { id: 'chat', label: 'AI Assistant', icon: '🤖', desc: 'Chat about cars & buying' },
-    { id: 'recognizer', label: 'Car Recognizer', icon: '📸', desc: 'Identify car brand from photo' },
-    { id: 'finance', label: 'Finance Calculator', icon: '💰', desc: 'Estimate monthly payments' },
+    { id: 'messages', label: 'Messages', icon: '', desc: 'Inbox & conversations' },
+    { id: 'tradein', label: 'Trade-In', icon: '', desc: 'Trade your car for a new one' },
+    { id: 'chat', label: 'AI Assistant', icon: '', desc: 'Chat about cars & buying' },
+    { id: 'recognizer', label: 'Car Recognizer', icon: '', desc: 'Identify car brand from photo' },
+    { id: 'finance', label: 'Finance Calculator', icon: '', desc: 'Estimate monthly payments' },
   ];
 
   const handleToolClick = (id) => {
@@ -359,7 +359,6 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
               className={`dash-nav-link ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
               onClick={() => handleToolClick('profile')}
             >
-              <span>👤</span>
               <span>Profile</span>
             </button>
 
@@ -389,12 +388,12 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
         <div className="dash-mobile-tabs">
           <button className={`mobile-tab ${showListCarForm ? 'active' : ''}`}
             onClick={() => { setShowListCarForm(true); setShowDealershipForm(false); setActiveTool(null); }}>
-            <span>📝</span><span>List</span>
+            <span>List</span>
           </button>
           {isSalesEmployee && (
             <button className={`mobile-tab ${showDealershipForm ? 'active' : ''}`}
               onClick={() => { setShowDealershipForm(true); setShowListCarForm(false); setActiveTool(null); }}>
-              <span>🏢</span><span>Dealer</span>
+              <span>Dealer</span>
             </button>
           )}
           {tools.map(tool => (
@@ -413,14 +412,14 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
           ))}
           <button className={`mobile-tab ${activeTool === 'profile' && !showListCarForm && !showDealershipForm ? 'active' : ''}`}
             onClick={() => handleToolClick('profile')}>
-            <span>👤</span><span>Profile</span>
+            <span>Profile</span>
           </button>
           {isAdmin && (
             <button
               className="mobile-tab"
               onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
             >
-              <span>⚙️</span><span>Admin</span>
+              <span>Admin</span>
             </button>
           )}
         </div>

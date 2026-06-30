@@ -302,7 +302,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
           {error && !loading && (
             <div className="no-results">
-              <span>⚠️</span>
               <h3>Error Loading Cars</h3>
               <p>{error}</p>
               <button onClick={fetchCars} className="reset-filters" style={{ marginTop: '16px' }}>
@@ -335,7 +334,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
           {!loading && !error && cars.length > 0 && filtered.length === 0 && (
             <div className="no-results">
-              <span>🔍</span>
               <h3>No cars match your filters</h3>
               <p>Try different keywords or adjust your filters</p>
               <button className="reset-filters" onClick={resetFilters} style={{ marginTop: '16px', width: 'auto', padding: '10px 24px' }}>
@@ -346,7 +344,6 @@ const InventoryPage = ({ onNavigate, locationFilters }) => {
 
           {!loading && !error && cars.length === 0 && (
             <div className="no-results">
-              <span>🚗</span>
               <h3>No vehicles in inventory yet</h3>
               <p>Check back soon — new cars are added regularly!</p>
               <button onClick={fetchCars} style={{ marginTop: '16px', padding: '10px 24px', background: 'var(--black)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>

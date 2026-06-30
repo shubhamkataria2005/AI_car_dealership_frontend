@@ -377,7 +377,6 @@ const CheckoutPage = ({ car, user, sessionToken, onNavigate }) => {
               </button>
 
               <div className="secure-note">
-                <span>🔒</span>
                 <p>Your payment information is secure. No actual payment will be processed in demo mode.</p>
               </div>
             </form>

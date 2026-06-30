@@ -89,9 +89,9 @@ const CarRecognizer = ({ sessionToken, user }) => {
         localStorage.setItem('recentCarPredictions', JSON.stringify(updated));
         
         if (data.mock) {
-          console.log('⚠️ Using mock prediction (ML server not available)');
+          console.log('Using mock prediction (ML server not available)');
         } else {
-          console.log('✅ ML prediction successful');
+          console.log('ML prediction successful');
         }
       } else {
         setError(data.message || data.error || 'Recognition failed. Please try another image.');
@@ -123,11 +123,11 @@ const CarRecognizer = ({ sessionToken, user }) => {
   return (
     <div className="tool-panel">
       <div className="tool-header">
-        <h2>🚗 Car Brand Recognizer</h2>
+        <h2>Car Brand Recognizer</h2>
         <p>Upload a photo of any car to identify its brand using AI</p>
         {serverStatus && !serverStatus.available && (
           <p style={{ fontSize: '12px', color: '#e67e22', marginTop: '8px', padding: '8px', background: '#fff3e0', borderRadius: '4px' }}>
-            ⚠️ ML server is not available. Using mock predictions for testing. Start the Python server for real predictions.
+            ML server is not available. Using mock predictions for testing. Start the Python server for real predictions.
           </p>
         )}
       </div>
@@ -166,7 +166,7 @@ const CarRecognizer = ({ sessionToken, user }) => {
             </div>
           ) : (
             <>
-              <div className="upload-icon">📸</div>
+              <div className="upload-icon">+</div>
               <h3>Upload a Car Photo</h3>
               <p>Supports JPG, PNG, WEBP (max 10MB)</p>
               <span className="upload-btn">Choose Image</span>
@@ -187,11 +187,11 @@ const CarRecognizer = ({ sessionToken, user }) => {
             onClick={recognizeCar}
             disabled={loading}
           >
-            {loading ? '🔍 Analysing...' : '🔍 Identify Car Brand'}
+            {loading ? 'Analysing...' : 'Identify Car Brand'}
           </button>
         )}
 
-        {error && <div className="tool-error">❌ {error}</div>}
+        {error && <div className="tool-error">{error}</div>}
 
         {prediction && (
           <div className="recognition-result">
@@ -235,7 +235,7 @@ const CarRecognizer = ({ sessionToken, user }) => {
             
             {prediction.mock && (
               <div style={{ marginTop: '16px', fontSize: '11px', color: '#e67e22', background: '#fff3e0', padding: '10px', borderRadius: '6px' }}>
-                ⚠️ Mock prediction (ML server not available)
+                Mock prediction (ML server not available)
                 <button 
                   onClick={checkServerStatus}
                   style={{ marginLeft: '10px', background: 'none', border: '1px solid #e67e22', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer' }}
@@ -329,10 +329,10 @@ const CarRecognizer = ({ sessionToken, user }) => {
             <strong style={{ color: 'var(--charcoal)', display: 'block', marginBottom: '6px' }}>How it works</strong>
             <p>Upload any photo of a car and our AI model will identify the brand and give you a confidence score.</p>
             <p style={{ marginTop: '8px', fontSize: '12px' }}>
-              📸 Best results with clear, front-facing photos of the car
+              Best results with clear, front-facing photos of the car
             </p>
             <p style={{ marginTop: '4px', fontSize: '12px' }}>
-              🤖 Powered by TensorFlow deep learning model
+              Powered by TensorFlow deep learning model
             </p>
             <p style={{ marginTop: '8px', fontSize: '11px', color: 'var(--gray)' }}>
               Recognizable brands: BMW, Mercedes, Audi, Toyota, Honda, Ford, Volkswagen, Nissan, Hyundai, Kia

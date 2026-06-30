@@ -172,7 +172,6 @@ const MessagesInbox = ({ user, sessionToken }) => {
           <div className="inbox-loading">Loading conversations...</div>
         ) : conversations.length === 0 ? (
           <div className="inbox-empty">
-            <span>💬</span>
             <p>No conversations yet</p>
             <small>Message a seller from a car listing</small>
           </div>
@@ -207,7 +206,6 @@ const MessagesInbox = ({ user, sessionToken }) => {
       <div className="inbox-chat">
         {!activeConvo ? (
           <div className="chat-placeholder">
-            <span>💬</span>
             <h4>Select a conversation</h4>
             <p>Choose a conversation from the left, or message a seller from a car listing.</p>
           </div>
@@ -223,7 +221,7 @@ const MessagesInbox = ({ user, sessionToken }) => {
                   {activeConvoData?.otherUsername || 'Unknown'}
                 </div>
                 <div className="chat-header-sub">
-                  {connected ? '🟢 Online' : '⚫ Offline'}
+                  {connected ? 'Online' : 'Offline'}
                 </div>
               </div>
             </div>
@@ -232,7 +230,7 @@ const MessagesInbox = ({ user, sessionToken }) => {
             <div className="chat-messages-area">
               {messages.length === 0 && (
                 <div className="chat-no-messages">
-                  Start the conversation below 👇
+                  Start the conversation below
                 </div>
               )}
               {messages.map((msg, i) => (
