@@ -310,8 +310,8 @@ const Dashboard = ({ user, sessionToken, onLogout, onNavigate, onUserUpdate }) =
               <strong>{user?.username || 'User'}</strong>
               <span>{user?.email || 'user@email.com'}</span>
               {(user?.role === 'SALES_EMPLOYEE' || user?.isEmployee) && <span style={{ fontSize: '10px', color: 'var(--gold)' }}>Sales Employee</span>}
-              {user?.role === 'ADMIN' && <span style={{ fontSize: '10px', color: 'var(--gold)' }}>Admin</span>}
-              {user?.role === 'SUPER_ADMIN' && <span style={{ fontSize: '10px', color: 'var(--gold)' }}>Super Admin</span>}
+              {user?.role === 'ADMIN' && <span style={{ fontSize: '10px', color: 'var(--gold)' }}>Manager</span>}
+              {user?.role === 'SUPER_ADMIN' && <span style={{ fontSize: '10px', color: 'var(--gold)' }}>Boss</span>}
             </div>
           </div>
 

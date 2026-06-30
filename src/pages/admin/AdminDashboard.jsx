@@ -280,8 +280,8 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
             <div className="stat-breakdown">
               <span>Users: {stats.regularUsers || 0}</span>
               <span>Sales: {stats.salesEmployees || 0}</span>
-              <span>Admins: {stats.admins || 0}</span>
-              <span>Super Admins: {stats.superAdmins || 0}</span>
+              <span>Managers: {stats.admins || 0}</span>
+              <span>Bosses: {stats.superAdmins || 0}</span>
             </div>
           </div>
         </div>
@@ -339,7 +339,7 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
               <div key={userItem.id} className="recent-item">
                 <span>{userItem.username}</span>
                 <span className={`role-badge role-${userItem.role?.toLowerCase()}`}>
-                  {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role}
+                  {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role === 'SUPER_ADMIN' ? 'Boss' : userItem.role === 'ADMIN' ? 'Manager' : userItem.role}
                 </span>
                 <span>{userItem.email}</span>
               </div>
@@ -397,12 +397,12 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   >
                     <option value="USER">User</option>
                     <option value="SALES_EMPLOYEE">Sales Employee</option>
-                    <option value="ADMIN">Admin</option>
-                    <option value="SUPER_ADMIN">Super Admin</option>
+                    <option value="ADMIN">Manager</option>
+                    <option value="SUPER_ADMIN">Boss</option>
                   </select>
                 ) : (
                   <span className={`role-badge role-${userItem.role?.toLowerCase()}`}>
-                    {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role}
+                    {userItem.role === 'SALES_EMPLOYEE' ? 'Sales Employee' : userItem.role === 'SUPER_ADMIN' ? 'Boss' : userItem.role === 'ADMIN' ? 'Manager' : userItem.role}
                   </span>
                 )}
               </td>
@@ -411,10 +411,10 @@ const AdminDashboard = ({ user, sessionToken, onNavigate, onLogout }) => {
                   <span className="employee-badge">Sales Employee</span>
                 )}
                 {userItem.role === 'ADMIN' && (
-                  <span className="admin-badge">Admin</span>
+                  <span className="admin-badge">Manager</span>
                 )}
                 {userItem.role === 'SUPER_ADMIN' && (
-                  <span className="super-admin-badge">Super Admin</span>
+                  <span className="super-admin-badge">Boss</span>
                 )}
                 {userItem.role === 'USER' && (
                   <span className="regular-user-badge">Regular User</span>
